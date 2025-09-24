@@ -7,81 +7,83 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     body { font-family: 'Poppins', sans-serif; margin:0; padding:0; background:#f4f4f4; color:#333; display:flex; }
-    .sidebar { width:200px; background:#8B0000; color:#fff; height:100vh; padding:20px; box-sizing:border-box; position:fixed; left:0; top:0; transition: transform 0.3s ease; }
-    .sidebar h2{text-align:center;}
-    .sidebar button{display:block;width:100%;margin:10px 0;padding:12px;border:none;border-radius:8px;background:#fff;color:#8B0000;font-weight:bold;cursor:pointer;text-align:left;transition:0.3s;}
-    .sidebar button:hover{background:#ddd;}
-    .toggle-btn{position:fixed;top:15px;left:15px;background:#8B0000;color:#fff;border:none;padding:10px 15px;border-radius:8px;cursor:pointer;z-index:1000;}
-    .sidebar.hidden{transform:translateX(-100%);}
-    .content{margin-left:200px; flex:1; padding:20px; transition: margin-left 0.3s ease;}
-    .content.full{margin-left:0;}
-    header{background:#8B0000;color:#fff;padding:15px;border-radius:12px;font-size:1.5em;text-align:center;margin-bottom:20px;}
-    .input-group{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
-    input, button{padding:12px;border-radius:12px;border:none;font-size:1em;}
-    input{background:#fff;}
-    .input-group button{background:#8B0000;color:#fff;cursor:pointer;font-weight:bold;display:flex;align-items:center;justify-content:center;gap:8px;}
-    .input-group button:hover{background:#a40000;}
-    .card{background:#fff;border-radius:12px;padding:15px;margin-bottom:15px;box-shadow:0 2px 6px rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:center;}
-    .pago{color:#00b894;font-weight:bold;}
-    .nao-pago{color:#d63031;font-weight:bold;}
-    .totais{margin-top:20px;font-weight:bold;padding:15px;background:#8B0000;color:#fff;border-radius:12px;text-align:center;}
-    .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;justify-content:center;align-items:center;}
-    .modal-content{background:#fff;padding:20px;border-radius:12px;width:300px;}
-    .modal-content h3{margin-top:0;}
-    .modal-content button{margin-top:10px;width:100%;}
+    .sidebar { width:250px; background:#8B0000; color:#fff; height:100vh; padding:20px; box-sizing:border-box; position:fixed; left:0; top:0; transition:transform 0.3s ease; }
+    .sidebar h2 { text-align:center; }
+    .sidebar button { display:block; width:100%; margin:10px 0; padding:12px; border:none; border-radius:8px; background:#fff; color:#8B0000; font-weight:bold; cursor:pointer; text-align:left; transition:0.3s; }
+    .sidebar button:hover { background:#ddd; }
+    .toggle-btn { position:fixed; top:15px; left:15px; background:#8B0000; color:#fff; border:none; padding:10px 15px; border-radius:8px; cursor:pointer; z-index:1000; }
+    .sidebar.hidden { transform:translateX(-100%); }
+    .content { margin-left:250px; flex:1; padding:20px; transition:margin-left 0.3s ease; }
+    .content.full { margin-left:0; }
+    header { background:#8B0000; color:#fff; padding:15px; border-radius:12px; font-size:1.5em; text-align:center; margin-bottom:20px; }
+    .input-group { display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
+    input, button { padding:12px; border-radius:12px; border:none; font-size:1em; }
+    input { background:#fff; }
+    .input-group button { background:#8B0000; color:#fff; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:8px; }
+    .input-group button:hover { background:#a40000; }
+    .card { background:#fff; border-radius:12px; padding:15px; margin-bottom:15px; box-shadow:0 2px 6px rgba(0,0,0,0.1); display:flex; justify-content:space-between; align-items:center; }
+    .pago { color:#00b894; font-weight:bold; }
+    .nao-pago { color:#d63031; font-weight:bold; }
+    .totais { margin-top:20px; font-weight:bold; padding:15px; background:#8B0000; color:#fff; border-radius:12px; text-align:center; }
+    .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:none; justify-content:center; align-items:center; }
+    .modal-content { background:#fff; padding:20px; border-radius:12px; width:300px; }
+    .modal-content h3 { margin-top:0; }
+    .modal-content button { margin-top:10px; width:100%; }
   </style>
 </head>
 <body>
+  <button class="toggle-btn" onclick="toggleMenu()">☰</button>
 
-<button class="toggle-btn" onclick="toggleMenu()">☰</button>
-
-<div class="sidebar hidden" id="menu">
-  <h2><i class="fa-solid fa-cheese"></i> Menu</h2>
-  <button onclick="filtroMes=null; filtroStatus=null; atualizarLista()">Todas</button>
-  <button onclick="filtroStatus='true'; atualizarLista()">Pagas</button>
-  <button onclick="filtroStatus='false'; atualizarLista()">Não Pagas</button>
-  <div id="mesesMenu"></div>
-</div>
-
-<div class="content full" id="conteudo">
-  <header>Controle de Vendas de Queijos</header>
-
-  <div class="input-group">
-    <input type="text" id="cliente" placeholder="Nome do Cliente">
-    <input type="number" id="valor" placeholder="Valor (R$)">
-    <input type="date" id="dataVenda">
-    <button onclick="adicionarVenda()"><i class="fa-solid fa-plus"></i> Adicionar Venda</button>
+  <div class="sidebar hidden" id="menu">
+    <h2><i class="fa-solid fa-cheese"></i> Menu</h2>
+    <button onclick="filtroMes=null; filtroStatus=null; atualizarLista()">Todas</button>
+    <button onclick="filtroStatus='pago'; atualizarLista()">Pagas</button>
+    <button onclick="filtroStatus='nao'; atualizarLista()">Não Pagas</button>
+    <div id="mesesMenu"></div>
   </div>
 
-  <div id="listaVendas"></div>
-  <div class="totais" id="totais"></div>
-</div>
+  <div class="content full" id="conteudo">
+    <header>Controle de Vendas de Queijos</header>
 
-<div class="modal" id="modalEditar">
-  <div class="modal-content">
-    <h3>Editar Venda</h3>
-    <input type="text" id="editCliente" placeholder="Nome do Cliente">
-    <input type="number" id="editValor" placeholder="Valor (R$)">
-    <input type="date" id="editData">
-    <button onclick="salvarEdicao()">Salvar</button>
-    <button onclick="fecharModal()">Cancelar</button>
+    <div class="input-group">
+      <input type="text" id="cliente" placeholder="Nome do Cliente">
+      <input type="number" id="valor" placeholder="Valor (R$)">
+      <input type="date" id="dataVenda">
+      <button onclick="adicionarVenda()"><i class="fa-solid fa-plus"></i> Adicionar Venda</button>
+    </div>
+
+    <div id="listaVendas"></div>
+    <div class="totais" id="totais"></div>
   </div>
-</div>
+
+  <div class="modal" id="modalEditar">
+    <div class="modal-content">
+      <h3>Editar Venda</h3>
+      <input type="text" id="editCliente" placeholder="Nome do Cliente">
+      <input type="number" id="editValor" placeholder="Valor (R$)">
+      <input type="date" id="editData">
+      <button onclick="salvarEdicao()">Salvar</button>
+      <button onclick="fecharModal()">Cancelar</button>
+    </div>
+  </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbz1VNph839icGGfWlvb7KrYFkofSSApcSeldZkQJoBKDSCugtNpHK4csgjSDV0rOdB_3w/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycby71d8X-MT1IpMwTGhiWqsUUAwfa6bQRSh01y4RsqTDuFbkfdYb2_3fmLc-VL3NsgMD/exec";
 
 let vendas = [];
 let filtroMes = null;
 let filtroStatus = null;
 let editandoId = null;
 
-// Funções principais
-async function carregarVendas(){
-  const res = await fetch(API_URL);
-  vendas = await res.json();
-  gerarBotoesMeses();
-  atualizarLista();
+async function carregarVendas() {
+  try {
+    const res = await fetch(API_URL);
+    vendas = await res.json();
+    gerarBotoesMeses();
+    atualizarLista();
+  } catch(err) {
+    alert("Erro ao carregar vendas: " + err);
+  }
 }
 
 async function adicionarVenda(){
@@ -89,120 +91,65 @@ async function adicionarVenda(){
   const valor = parseFloat(document.getElementById("valor").value);
   const dataVenda = document.getElementById("dataVenda").value;
   if(!cliente || isNaN(valor) || !dataVenda){ alert("Preencha todos os campos!"); return; }
-
+  
   const venda = { cliente, valor, dataVenda, pago: false };
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type':'application/json' },
-    body: JSON.stringify(venda)
-  });
-  const data = await res.json();
-  venda.id = data.id;
-  vendas.push(venda);
-  gerarBotoesMeses();
-  atualizarLista();
-
-  document.getElementById("cliente").value="";
-  document.getElementById("valor").value="";
-  document.getElementById("dataVenda").value="";
-}
-
-async function atualizarVenda(venda){
-  await fetch(API_URL, {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify(venda)
-  });
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify(venda)
+    });
+    const data = await res.json();
+    venda.id = data.id;
+    vendas.push(venda);
+    gerarBotoesMeses();
+    atualizarLista();
+    document.getElementById("cliente").value="";
+    document.getElementById("valor").value="";
+    document.getElementById("dataVenda").value="";
+  } catch(err) {
+    alert("Erro ao adicionar venda: " + err);
+  }
 }
 
 async function excluirVenda(id){
-  if(confirm("Deseja realmente excluir esta venda?")){
-    await fetch(API_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({id, acao:"excluir"})
+  try {
+    await fetch(API_URL, {
+      method:"POST",
+      body: JSON.stringify({ acao:"excluir", id })
     });
-    vendas = vendas.filter(v=>v.id!=id);
+    vendas = vendas.filter(v=>v.id!==id);
     gerarBotoesMeses();
     atualizarLista();
+  } catch(err){
+    alert("Erro ao excluir venda: "+err);
   }
 }
 
-async function togglePagoVenda(id){
-  const v = vendas.find(v=>v.id==id);
-  if(!v) return;
-  v.pago = !v.pago;
-  await atualizarVenda(v);
-  atualizarLista();
-}
-
-function toggleMenu(){
-  document.getElementById("menu").classList.toggle("hidden");
-  document.getElementById("conteudo").classList.toggle("full");
-}
-
-function gerarBotoesMeses(){
-  const div = document.getElementById("mesesMenu");
-  div.innerHTML="<h3>Meses</h3>";
-  const meses = [...new Set(vendas.map(v=>{
-    const d=new Date(v.dataVenda);
-    return `${d.getFullYear()}-${d.getMonth()+1}`;
-  }))];
-  meses.sort((a,b)=> new Date(a+"-01") - new Date(b+"-01"));
-  const nomesMeses=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-  meses.forEach(m=>{
-    const [ano,mes]=m.split("-");
-    const btn=document.createElement("button");
-    btn.textContent=`${nomesMeses[mes-1]} ${ano}`;
-    btn.onclick=()=>{filtroMes=m; atualizarLista();};
-    div.appendChild(btn);
-  });
-}
-
-function atualizarLista(){
-  const div = document.getElementById("listaVendas");
-  div.innerHTML="";
-  let lista = [...vendas];
-
-  if(filtroMes){
-    lista = lista.filter(v=>{
-      const d=new Date(v.dataVenda);
-      return `${d.getFullYear()}-${d.getMonth()+1}`===filtroMes;
-    });
+async function togglePago(id){
+  const v = vendas.find(v=>v.id===id);
+  if(v){
+    v.pago = !v.pago;
+    try {
+      await fetch(API_URL, {
+        method:"POST",
+        body: JSON.stringify(v)
+      });
+      atualizarLista();
+    } catch(err){
+      alert("Erro ao atualizar venda: "+err);
+    }
   }
-  if(filtroStatus) lista = lista.filter(v=>String(v.pago)===filtroStatus);
-  lista.sort((a,b)=>a.cliente.localeCompare(b.cliente));
-
-  let totalPagos=0,totalNaoPagos=0;
-  lista.forEach(v=>{
-    const card = document.createElement("div");
-    card.className="card";
-    card.innerHTML=`
-      <div><strong>${v.cliente}</strong> - R$ ${parseFloat(v.valor).toFixed(2)}<br><small>${new Date(v.dataVenda).toLocaleDateString()}</small></div>
-      <div style="text-align:right;">
-        <span class="${v.pago?'pago':'nao-pago'}">${v.pago?'Pago':'Não Pago'}</span><br>
-        <button onclick="togglePagoVenda(${v.id})"><i class="fa-solid fa-check"></i></button>
-        <button onclick="editarVenda(${v.id})"><i class="fa-solid fa-pen"></i></button>
-        <button onclick="excluirVenda(${v.id})"><i class="fa-solid fa-trash"></i></button>
-      </div>`;
-    div.appendChild(card);
-
-    if(v.pago) totalPagos+=parseFloat(v.valor);
-    else totalNaoPagos+=parseFloat(v.valor);
-  });
-
-  document.getElementById("totais").innerHTML=`Total Pago: R$ ${totalPagos.toFixed(2)} | Total Não Pago: R$ ${totalNaoPagos.toFixed(2)}`;
 }
 
-// Modal de edição
 function editarVenda(id){
-  const v = vendas.find(v=>v.id==id);
-  if(!v) return;
-  editandoId=id;
-  document.getElementById("editCliente").value=v.cliente;
-  document.getElementById("editValor").value=v.valor;
-  document.getElementById("editData").value=v.dataVenda;
-  document.getElementById("modalEditar").style.display="flex";
+  const v = vendas.find(v=>v.id===id);
+  if(v){
+    editandoId = id;
+    document.getElementById("editCliente").value = v.cliente;
+    document.getElementById("editValor").value = v.valor;
+    document.getElementById("editData").value = v.dataVenda;
+    document.getElementById("modalEditar").style.display = "flex";
+  }
 }
 
 async function salvarEdicao(){
@@ -211,18 +158,75 @@ async function salvarEdicao(){
   const dataVenda = document.getElementById("editData").value;
   if(!cliente || isNaN(valor) || !dataVenda){ alert("Preencha todos os campos!"); return; }
 
-  const venda = { id: editandoId, cliente, valor, dataVenda, pago: vendas.find(v=>v.id==editandoId).pago };
-  await atualizarVenda(venda);
-
-  const idx = vendas.findIndex(v=>v.id==editandoId);
-  vendas[idx] = venda;
-  atualizarLista();
+  const v = vendas.find(v=>v.id===editandoId);
+  if(v){
+    v.cliente = cliente;
+    v.valor = valor;
+    v.dataVenda = dataVenda;
+    try {
+      await fetch(API_URL, {
+        method:"POST",
+        body: JSON.stringify(v)
+      });
+      gerarBotoesMeses();
+      atualizarLista();
+    } catch(err){
+      alert("Erro ao atualizar venda: "+err);
+    }
+  }
   fecharModal();
 }
 
 function fecharModal(){ document.getElementById("modalEditar").style.display="none"; editandoId=null; }
 
-// Inicialização
+function gerarBotoesMeses(){
+  const div = document.getElementById("mesesMenu");
+  div.innerHTML = "<h3>Meses</h3>";
+  const meses = [...new Set(vendas.map(v => { const d=new Date(v.dataVenda); return `${d.getFullYear()}-${d.getMonth()+1}`; }))];
+  meses.sort((a,b)=> new Date(a+"-01") - new Date(b+"-01"));
+  const nomesMeses=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  meses.forEach(m=>{
+    const [ano,mes]=m.split("-");
+    const btn=document.createElement("button");
+    btn.textContent=`${nomesMeses[mes-1]} ${ano}`;
+    btn.onclick=()=>{ filtroMes=m; atualizarLista(); };
+    div.appendChild(btn);
+  });
+}
+
+function atualizarLista(){
+  const div=document.getElementById("listaVendas");
+  div.innerHTML="";
+  let lista=[...vendas];
+  if(filtroMes) lista = lista.filter(v=>{ const d=new Date(v.dataVenda); return `${d.getFullYear()}-${d.getMonth()+1}`===filtroMes; });
+  if(filtroStatus==="pago") lista=lista.filter(v=>v.pago);
+  if(filtroStatus==="nao") lista=lista.filter(v=>!v.pago);
+  lista.sort((a,b)=>a.cliente.localeCompare(b.cliente));
+
+  let totalPagos=0,totalNaoPagos=0;
+  lista.forEach(v=>{
+    const card=document.createElement("div");
+    card.className="card";
+    card.innerHTML=`
+      <div><strong>${v.cliente}</strong> - R$ ${v.valor.toFixed(2)}<br><small>${new Date(v.dataVenda).toLocaleDateString()}</small></div>
+      <div style="text-align:right;">
+        <span class="${v.pago?'pago':'nao-pago'}">${v.pago?'Pago':'Não Pago'}</span><br>
+        <button onclick="togglePago(${v.id})"><i class="fa-solid fa-check"></i></button>
+        <button onclick="editarVenda(${v.id})"><i class="fa-solid fa-pen"></i></button>
+        <button onclick="excluirVenda(${v.id})"><i class="fa-solid fa-trash"></i></button>
+      </div>`;
+    div.appendChild(card);
+    if(v.pago) totalPagos+=v.valor; else totalNaoPagos+=v.valor;
+  });
+  document.getElementById("totais").innerHTML=`Total Pago: R$ ${totalPagos.toFixed(2)} | Total Não Pago: R$ ${totalNaoPagos.toFixed(2)}`;
+}
+
+function toggleMenu(){
+  document.getElementById("menu").classList.toggle("hidden");
+  document.getElementById("conteudo").classList.toggle("full");
+}
+
+// Carregar vendas ao abrir
 carregarVendas();
 </script>
 </body>
