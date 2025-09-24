@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controle de Vendas - Karol</title>
+<style>
+  body { font-family: 'Montserrat', sans-serif; margin:0; background:#121212; color:#f5f5f5; }
+  header { background:#1f1f1f; padding:1rem; display:flex; align-items:center; justify-content:space-between; color:#fff; box-shadow:0 2px 5px rgba(0,0,0,0.5); }
+  .menu-btn { font-size:24px; background:none; border:none; color:#fff; cursor:pointer; }
+  .sidebar { position:fixed; top:0; left:-260px; width:250px; height:100%; background:#8B0000; box-shadow:2px 0 6px rgba(0,0,0,0.6); transition:left 0.3s ease; padding-top:60px; z-index:1000; }
+  .sidebar.active { left:0; }
+  .sidebar a { display:block; padding:15px 20px; color:#ddd; text-decoration:none; transition: background 0.2s; }
+  .sidebar a:hover { background:#a52a2a; }
+  .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); display:none; z-index:999; }
+  .overlay.active { display:block; }
+  main { padding:1rem; }
+  h2 { margin-top:0; }
+  form { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:10px; }
+  input, select, button { padding:10px; border-radius:8px; border:none; font-size:14px; }
+  input, select { flex:1; background:#2a2a2a; color:#fff; }
+  button { background:#6200ea; color:#fff; cursor:pointer; transition: background 0.3s; }
+  button:hover { background:#7c4dff; }
+  .venda { margin-bottom:10px; padding:12px; border-radius:10px; display:flex; justify-content: space-between; align-items: center; box-shadow:0 2px 5px rgba(0,0,0,0.3); opacity:0; transform:translateY(10px); animation: fadeIn 0.3s forwards; }
+  .venda span { flex:1; }
+  .pago { background:#4CAF50; color:#fff; padding:5px 10px; border-radius:6px; }
+  .nao-pago { background:#f44336; color:#fff; padding:5px 10px; border-radius:6px; }
+  .totais { margin-top:20px; padding:12px; border-radius:10px; background:#1e1e1e; box-shadow:0 2px 5px rgba(0,0,0,0.3); }
+  #filtro-meses { margin-bottom:15px; }
+  #filtro-meses button { margin-right:5px; margin-bottom:5px; }
+  @keyframes fadeIn { to { opacity:1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Controle de Vendas - Karol</h1>
+  <button class="menu-btn">☰</button>
+</header>
+
+<div class="sidebar" id="sidebar">
+  <a href="#" data-section="todas">📋 Todas as Vendas</a>
+  <a href="#" data-section="pagas">✅ Pagas</a>
+  <a href="#" data-section="nao-pagas">❌ Não Pagas</a>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<main>
+  <h2 id="titulo-lista">Todas as Vendas</h2>
+  
+  <form id="form-venda">
+    <input type="text" id="cliente" placeholder="Nome do cliente" required />
+    <input type="number" id="valor" placeholder="Valor (R$)" required />
+    <input type="date" id="data-venda" required />
+    <input type="date" id="data-pagamento" placeholder="Data de Pagamento" />
+    <button type="submit">Adicionar</button>
+  </form>
+
+  <div id="filtro-meses"></div>
+  <div id="lista-vendas"></div>
+  <div class="totais" id="totais-vendas"></div>
+</main>
+
+<script>
+const menuBtn = document.querySelector(".menu-btn");
+const sidebar = document.getElementById("sidebar");
+const overlay = document.getElementById("overlay");
+const form = document.getElementById("form-venda");
+const lista = document.getElementById("lista-vendas");
+const tituloLista = document.getElementById("titulo-lista");
+const totaisDiv = document.getElementById("totais-vendas");
+const filtroMesContainer = document.getElementById("filtro-meses");
+
+let vendas = [];
+let filtro = "todas";
+let filtroMes = null;
+
+// Menu lateral
+function toggleMenu(){ sidebar.classList.toggle("active"); overlay.classList.toggle("active"); }
+menuBtn.addEventListener("click",toggleMenu);
+overlay.addEventListener("click",toggleMenu);
+document.querySelectorAll(".sidebar a").forEach(link=>{
+  link.addEventListener("click",e=>{
+    e.preventDefault();
+    filtro = link.dataset.section;
+    atualizarLista();
+    toggleMenu();
+  });
+});
+
+// Simulação de vendas para teste local
+async function carregarVendas(){
+  vendas = [
+    {id:1, cliente:"Jonathan", valor:43, dataVenda:"2025-08-09", dataPagamento:"", pago:false},
+    {id:2, cliente:"Karol", valor:50, dataVenda:"2025-09-09", dataPagamento:"2025-09-10", pago:true},
+    {id:3, cliente:"Luciana", valor:30, dataVenda:"2025-07-15", dataPagamento:"", pago:false}
+  ];
+  gerarBotoesMeses();
+  atualizarLista();
+}
+
+// Adicionar venda
+form.addEventListener("submit", e=>{
+  e.preventDefault();
+  const cliente = document.getElementById("cliente").value.trim();
+  const valor = parseFloat(document.getElementById("valor").value);
+  const dataVenda = document.getElementById("data-venda").value;
+  const dataPagamento = document.getElementById("data-pagamento").value;
+  if(!cliente||isNaN(valor)||!dataVenda) return;
+
+  const novaVenda = { id:Date.now(), cliente, valor, dataVenda, dataPagamento, pago:false };
+  vendas.push(novaVenda);
+  gerarBotoesMeses();
+  atualizarLista();
+  form.reset();
+});
+
+// Gerar botões de meses em ordem cronológica (somente meses com vendas)
+function gerarBotoesMeses(){
+  const mesesMap = new Map();
+  vendas.forEach(v=>{
+    const [ano, mes, dia] = v.dataVenda.split("-");
+    const key = `${mes}/${ano}`;
+    if(!mesesMap.has(key)) mesesMap.set(key, []);
+    mesesMap.get(key).push(v);
+  });
+
+  // Ordenar meses por número e ano
+  const mesesOrdenados = Array.from(mesesMap.keys()).sort((a,b)=>{
+    const [mesA, anoA] = a.split("/").map(Number);
+    const [mesB, anoB] = b.split("/").map(Number);
+    if(anoA !== anoB) return anoA - anoB;
+    return mesA - mesB;
+  });
+
+  filtroMesContainer.innerHTML = '';
+  const todasBtn = document.createElement("button");
+  todasBtn.textContent = "Todas";
+  todasBtn.onclick = () => { filtroMes=null; atualizarLista(); };
+  filtroMesContainer.appendChild(todasBtn);
+
+  mesesOrdenados.forEach(m=>{
+    const btn = document.createElement("button");
+    btn.textContent = nomeMes(m);
+    btn.onclick = () => { filtroMes = m; atualizarLista(); };
+    filtroMesContainer.appendChild(btn);
+  });
+}
+
+// Converter mm/aaaa para nome do mês
+function nomeMes(mesAno){
+  const nomes = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  const [mes, ano] = mesAno.split("/");
+  return `${nomes[parseInt(mes)-1]} ${ano}`;
+}
+
+// Atualizar lista de vendas
+function atualizarLista(){
+  lista.innerHTML="";
+  let filtradas = vendas;
+
+  if(filtro==="pagas") filtradas = filtradas.filter(v=>v.pago);
+  else if(filtro==="nao-pagas") filtradas = filtradas.filter(v=>!v.pago);
+
+  if(filtroMes){
+    filtradas = filtradas.filter(v=>{
+      const [ano,mes,dia] = v.dataVenda.split("-");
+      return `${mes}/${ano}`===filtroMes;
+    });
+  }
+
+  filtradas.sort((a,b)=> a.cliente.localeCompare(b.cliente,'pt-BR'));
+
+  tituloLista.textContent = filtro==="todas"?"Todas as Vendas":
+                          filtro==="pagas"?"Vendas Pagas":"Vendas Não Pagas";
+
+  filtradas.forEach(venda=>{
+    const div=document.createElement("div");
+    div.className="venda";
+    const statusClass=venda.pago?"pago":"nao-pago";
+    div.innerHTML=`
+      <span>
+        <strong>${venda.cliente}</strong> - R$ ${venda.valor.toFixed(2)}<br>
+        Venda: ${venda.dataVenda} | Pagamento: ${venda.dataPagamento? venda.dataPagamento:'-'}
+      </span>
+      <button class="${statusClass}" onclick="togglePago(${venda.id})">${venda.pago?'Pago':'Não Pago'}</button>
+      <button onclick="excluirVenda(${venda.id})">🗑</button>
+    `;
+    lista.appendChild(div);
+  });
+
+  const totalPagas = filtradas.filter(v=>v.pago).reduce((acc,v)=>acc+v.valor,0);
+  const totalNaoPagas = filtradas.filter(v=>!v.pago).reduce((acc,v)=>acc+v.valor,0);
+  const countPagas = filtradas.filter(v=>v.pago).length;
+  const countNaoPagas = filtradas.filter(v=>!v.pago).length;
+  totaisDiv.innerHTML = `
+    <strong>Resumo:</strong><br>
+    Pagas: ${countPagas} vendas | R$ ${totalPagas.toFixed(2)}<br>
+    Não Pagas: ${countNaoPagas} vendas | R$ ${totalNaoPagas.toFixed(2)}
+  `;
+}
+
+// Alternar Pago/Não Pago
+window.togglePago = id => {
+  const venda = vendas.find(v=>v.id===id);
+  if(venda){
+    venda.pago = !venda.pago;
+    atualizarLista();
+  }
+};
+
+// Excluir venda da tela
+window.excluirVenda = id => {
+  vendas = vendas.filter(v=>v.id!==id);
+  gerarBotoesMeses();
+  atualizarLista();
+};
+
+// Inicializar app
+carregarVendas();
+</script>
+</body>
+</html>
