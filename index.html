@@ -115,21 +115,25 @@ async function atualizarVenda(venda){
   });
 }
 
-function excluirVendaLocal(id){
-  vendas = vendas.filter(v=>v.id!=id);
-}
-
 async function excluirVenda(id){
   if(confirm("Deseja realmente excluir esta venda?")){
     await fetch(API_URL,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({id})
+      body: JSON.stringify({id, acao:"excluir"})
     });
-    excluirVendaLocal(id);
+    vendas = vendas.filter(v=>v.id!=id);
     gerarBotoesMeses();
     atualizarLista();
   }
+}
+
+async function togglePagoVenda(id){
+  const v = vendas.find(v=>v.id==id);
+  if(!v) return;
+  v.pago = !v.pago;
+  await atualizarVenda(v);
+  atualizarLista();
 }
 
 function toggleMenu(){
@@ -217,14 +221,6 @@ async function salvarEdicao(){
 }
 
 function fecharModal(){ document.getElementById("modalEditar").style.display="none"; editandoId=null; }
-
-async function togglePagoVenda(id){
-  const v = vendas.find(v=>v.id==id);
-  if(!v) return;
-  v.pago = !v.pago;
-  await atualizarVenda(v);
-  atualizarLista();
-}
 
 // Inicialização
 carregarVendas();
