@@ -1,221 +1,279 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Controle de Vendas - Karol</title>
-<style>
-  body { font-family: 'Montserrat', sans-serif; margin:0; background:#121212; color:#f5f5f5; }
-  header { background:#1f1f1f; padding:1rem; display:flex; align-items:center; justify-content:space-between; color:#fff; box-shadow:0 2px 5px rgba(0,0,0,0.5); }
-  .menu-btn { font-size:24px; background:none; border:none; color:#fff; cursor:pointer; }
-  .sidebar { position:fixed; top:0; left:-260px; width:250px; height:100%; background:#8B0000; box-shadow:2px 0 6px rgba(0,0,0,0.6); transition:left 0.3s ease; padding-top:60px; z-index:1000; }
-  .sidebar.active { left:0; }
-  .sidebar a { display:block; padding:15px 20px; color:#ddd; text-decoration:none; transition: background 0.2s; }
-  .sidebar a:hover { background:#a52a2a; }
-  .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); display:none; z-index:999; }
-  .overlay.active { display:block; }
-  main { padding:1rem; }
-  h2 { margin-top:0; }
-  form { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:10px; }
-  input, select, button { padding:10px; border-radius:8px; border:none; font-size:14px; }
-  input, select { flex:1; background:#2a2a2a; color:#fff; }
-  button { background:#6200ea; color:#fff; cursor:pointer; transition: background 0.3s; }
-  button:hover { background:#7c4dff; }
-  .venda { margin-bottom:10px; padding:12px; border-radius:10px; display:flex; justify-content: space-between; align-items: center; box-shadow:0 2px 5px rgba(0,0,0,0.3); opacity:0; transform:translateY(10px); animation: fadeIn 0.3s forwards; }
-  .venda span { flex:1; }
-  .pago { background:#4CAF50; color:#fff; padding:5px 10px; border-radius:6px; }
-  .nao-pago { background:#f44336; color:#fff; padding:5px 10px; border-radius:6px; }
-  .totais { margin-top:20px; padding:12px; border-radius:10px; background:#1e1e1e; box-shadow:0 2px 5px rgba(0,0,0,0.3); }
-  #filtro-meses { margin-bottom:15px; }
-  #filtro-meses button { margin-right:5px; margin-bottom:5px; }
-  @keyframes fadeIn { to { opacity:1; transform: translateY(0); } }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de Vendas</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+      color: #333;
+      display: flex;
+    }
+    /* MENU LATERAL */
+    .sidebar {
+      width: 250px;
+      background: #8B0000;
+      color: #fff;
+      height: 100vh;
+      padding: 20px;
+      box-sizing: border-box;
+      position: fixed;
+      left: 0;
+      top: 0;
+      transition: transform 0.3s ease;
+    }
+    .sidebar h2 { text-align: center; }
+    .sidebar button {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #fff;
+      color: #8B0000;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: left;
+      transition: 0.3s;
+    }
+    .sidebar button:hover { background: #ddd; }
+    .toggle-btn {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      background: #8B0000;
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      z-index: 1000;
+    }
+    .sidebar.hidden { transform: translateX(-100%); }
+    /* CONTEÚDO */
+    .content {
+      margin-left: 250px;
+      flex: 1;
+      padding: 20px;
+      transition: margin-left 0.3s ease;
+    }
+    .content.full { margin-left: 0; }
+    header {
+      background: #8B0000;
+      color: #fff;
+      padding: 15px;
+      border-radius: 12px;
+      font-size: 1.5em;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    input, button {
+      padding: 12px;
+      border-radius: 12px;
+      border: none;
+      font-size: 1em;
+    }
+    input { background: #fff; }
+    .input-group button {
+      background: #8B0000;
+      color: #fff;
+      cursor: pointer;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .input-group button:hover { background: #a40000; }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .pago { color: #00b894; font-weight: bold; }
+    .nao-pago { color: #d63031; font-weight: bold; }
+    .totais {
+      margin-top: 20px;
+      font-weight: bold;
+      padding: 15px;
+      background: #8B0000;
+      color: #fff;
+      border-radius: 12px;
+      text-align: center;
+    }
+    /* MODAL EDITAR */
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      width: 300px;
+    }
+    .modal-content h3 { margin-top: 0; }
+    .modal-content button {
+      margin-top: 10px;
+      width: 100%;
+    }
+  </style>
 </head>
 <body>
-<header>
-  <h1>Controle de Vendas - Karol</h1>
-  <button class="menu-btn">☰</button>
-</header>
+  <button class="toggle-btn" onclick="toggleMenu()">☰</button>
 
-<div class="sidebar" id="sidebar">
-  <a href="#" data-section="todas">📋 Todas as Vendas</a>
-  <a href="#" data-section="pagas">✅ Pagas</a>
-  <a href="#" data-section="nao-pagas">❌ Não Pagas</a>
-</div>
-<div class="overlay" id="overlay"></div>
+  <div class="sidebar hidden" id="menu">
+    <h2><i class="fa-solid fa-cheese"></i> Menu</h2>
+    <button onclick="filtroMes=null; filtroStatus=null; atualizarLista()">Todas</button>
+    <button onclick="filtroStatus='pago'; atualizarLista()">Pagas</button>
+    <button onclick="filtroStatus='nao'; atualizarLista()">Não Pagas</button>
+    <div id="mesesMenu"></div>
+  </div>
 
-<main>
-  <h2 id="titulo-lista">Todas as Vendas</h2>
-  
-  <form id="form-venda">
-    <input type="text" id="cliente" placeholder="Nome do cliente" required />
-    <input type="number" id="valor" placeholder="Valor (R$)" required />
-    <input type="date" id="data-venda" required />
-    <input type="date" id="data-pagamento" placeholder="Data de Pagamento" />
-    <button type="submit">Adicionar</button>
-  </form>
+  <div class="content full" id="conteudo">
+    <header>Controle de Vendas de Queijos</header>
 
-  <div id="filtro-meses"></div>
-  <div id="lista-vendas"></div>
-  <div class="totais" id="totais-vendas"></div>
-</main>
+    <div class="input-group">
+      <input type="text" id="cliente" placeholder="Nome do Cliente">
+      <input type="number" id="valor" placeholder="Valor (R$)">
+      <input type="date" id="dataVenda">
+      <button onclick="adicionarVenda()"><i class="fa-solid fa-plus"></i> Adicionar Venda</button>
+    </div>
+
+    <div id="listaVendas"></div>
+    <div class="totais" id="totais"></div>
+  </div>
+
+  <!-- MODAL EDITAR -->
+  <div class="modal" id="modalEditar">
+    <div class="modal-content">
+      <h3>Editar Venda</h3>
+      <input type="text" id="editCliente" placeholder="Nome do Cliente">
+      <input type="number" id="editValor" placeholder="Valor (R$)">
+      <input type="date" id="editData">
+      <button onclick="salvarEdicao()">Salvar</button>
+      <button onclick="fecharModal()">Cancelar</button>
+    </div>
+  </div>
 
 <script>
-const menuBtn = document.querySelector(".menu-btn");
-const sidebar = document.getElementById("sidebar");
-const overlay = document.getElementById("overlay");
-const form = document.getElementById("form-venda");
-const lista = document.getElementById("lista-vendas");
-const tituloLista = document.getElementById("titulo-lista");
-const totaisDiv = document.getElementById("totais-vendas");
-const filtroMesContainer = document.getElementById("filtro-meses");
-
 let vendas = [];
-let filtro = "todas";
 let filtroMes = null;
+let filtroStatus = null;
+let editandoId = null;
 
-// Menu lateral
-function toggleMenu(){ sidebar.classList.toggle("active"); overlay.classList.toggle("active"); }
-menuBtn.addEventListener("click",toggleMenu);
-overlay.addEventListener("click",toggleMenu);
-document.querySelectorAll(".sidebar a").forEach(link=>{
-  link.addEventListener("click",e=>{
-    e.preventDefault();
-    filtro = link.dataset.section;
-    atualizarLista();
-    toggleMenu();
-  });
-});
+function salvarVendas(){ localStorage.setItem("vendas", JSON.stringify(vendas)); }
+function carregarVendas(){ vendas = JSON.parse(localStorage.getItem("vendas")) || []; gerarBotoesMeses(); atualizarLista(); }
 
-// Simulação de vendas para teste local
-async function carregarVendas(){
-  vendas = [
-    {id:1, cliente:"Jonathan", valor:43, dataVenda:"2025-08-09", dataPagamento:"", pago:false},
-    {id:2, cliente:"Karol", valor:50, dataVenda:"2025-09-09", dataPagamento:"2025-09-10", pago:true},
-    {id:3, cliente:"Luciana", valor:30, dataVenda:"2025-07-15", dataPagamento:"", pago:false}
-  ];
-  gerarBotoesMeses();
-  atualizarLista();
-}
-
-// Adicionar venda
-form.addEventListener("submit", e=>{
-  e.preventDefault();
+function adicionarVenda(){
   const cliente = document.getElementById("cliente").value.trim();
   const valor = parseFloat(document.getElementById("valor").value);
-  const dataVenda = document.getElementById("data-venda").value;
-  const dataPagamento = document.getElementById("data-pagamento").value;
-  if(!cliente||isNaN(valor)||!dataVenda) return;
+  const dataVenda = document.getElementById("dataVenda").value;
+  if(!cliente || isNaN(valor) || !dataVenda){ alert("Preencha todos os campos!"); return; }
+  vendas.push({ id: Date.now(), cliente, valor, dataVenda, pago: false });
+  salvarVendas(); gerarBotoesMeses(); atualizarLista();
+  document.getElementById("cliente").value=""; document.getElementById("valor").value=""; document.getElementById("dataVenda").value="";
+}
+function excluirVenda(id){ vendas = vendas.filter(v=>v.id!==id); salvarVendas(); gerarBotoesMeses(); atualizarLista(); }
+function togglePago(id){ const v = vendas.find(v=>v.id===id); if(v){ v.pago=!v.pago; salvarVendas(); atualizarLista(); } }
 
-  const novaVenda = { id:Date.now(), cliente, valor, dataVenda, dataPagamento, pago:false };
-  vendas.push(novaVenda);
-  gerarBotoesMeses();
-  atualizarLista();
-  form.reset();
-});
+function editarVenda(id){
+  const v = vendas.find(v=>v.id===id);
+  if(v){
+    editandoId = id;
+    document.getElementById("editCliente").value = v.cliente;
+    document.getElementById("editValor").value = v.valor;
+    document.getElementById("editData").value = v.dataVenda;
+    document.getElementById("modalEditar").style.display = "flex";
+  }
+}
+function salvarEdicao(){
+  const cliente = document.getElementById("editCliente").value.trim();
+  const valor = parseFloat(document.getElementById("editValor").value);
+  const dataVenda = document.getElementById("editData").value;
+  if(!cliente || isNaN(valor) || !dataVenda){ alert("Preencha todos os campos!"); return; }
+  const v = vendas.find(v=>v.id===editandoId);
+  if(v){
+    v.cliente = cliente;
+    v.valor = valor;
+    v.dataVenda = dataVenda;
+    salvarVendas(); gerarBotoesMeses(); atualizarLista();
+  }
+  fecharModal();
+}
+function fecharModal(){ document.getElementById("modalEditar").style.display = "none"; editandoId=null; }
 
-// Gerar botões de meses em ordem cronológica (somente meses com vendas)
 function gerarBotoesMeses(){
-  const mesesMap = new Map();
-  vendas.forEach(v=>{
-    const [ano, mes, dia] = v.dataVenda.split("-");
-    const key = `${mes}/${ano}`;
-    if(!mesesMap.has(key)) mesesMap.set(key, []);
-    mesesMap.get(key).push(v);
-  });
-
-  // Ordenar meses por número e ano
-  const mesesOrdenados = Array.from(mesesMap.keys()).sort((a,b)=>{
-    const [mesA, anoA] = a.split("/").map(Number);
-    const [mesB, anoB] = b.split("/").map(Number);
-    if(anoA !== anoB) return anoA - anoB;
-    return mesA - mesB;
-  });
-
-  filtroMesContainer.innerHTML = '';
-  const todasBtn = document.createElement("button");
-  todasBtn.textContent = "Todas";
-  todasBtn.onclick = () => { filtroMes=null; atualizarLista(); };
-  filtroMesContainer.appendChild(todasBtn);
-
-  mesesOrdenados.forEach(m=>{
-    const btn = document.createElement("button");
-    btn.textContent = nomeMes(m);
-    btn.onclick = () => { filtroMes = m; atualizarLista(); };
-    filtroMesContainer.appendChild(btn);
+  const div = document.getElementById("mesesMenu");
+  div.innerHTML = "<h3>Meses</h3>";
+  const meses = [...new Set(vendas.map(v => {
+    const d=new Date(v.dataVenda); return `${d.getFullYear()}-${d.getMonth()+1}`;
+  }))];
+  meses.sort((a,b)=> new Date(a+"-01") - new Date(b+"-01"));
+  const nomesMeses=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  meses.forEach(m=>{
+    const [ano,mes]=m.split("-");
+    const btn=document.createElement("button");
+    btn.textContent=`${nomesMeses[mes-1]} ${ano}`;
+    btn.onclick=()=>{filtroMes=m; atualizarLista();};
+    div.appendChild(btn);
   });
 }
 
-// Converter mm/aaaa para nome do mês
-function nomeMes(mesAno){
-  const nomes = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-  const [mes, ano] = mesAno.split("/");
-  return `${nomes[parseInt(mes)-1]} ${ano}`;
-}
-
-// Atualizar lista de vendas
 function atualizarLista(){
-  lista.innerHTML="";
-  let filtradas = vendas;
+  const div=document.getElementById("listaVendas");
+  div.innerHTML="";
+  let lista=[...vendas];
+  if(filtroMes){ lista=lista.filter(v=>{ const d=new Date(v.dataVenda); return `${d.getFullYear()}-${d.getMonth()+1}`===filtroMes; }); }
+  if(filtroStatus==="pago"){ lista=lista.filter(v=>v.pago); }
+  if(filtroStatus==="nao"){ lista=lista.filter(v=>!v.pago); }
+  lista.sort((a,b)=>a.cliente.localeCompare(b.cliente));
 
-  if(filtro==="pagas") filtradas = filtradas.filter(v=>v.pago);
-  else if(filtro==="nao-pagas") filtradas = filtradas.filter(v=>!v.pago);
-
-  if(filtroMes){
-    filtradas = filtradas.filter(v=>{
-      const [ano,mes,dia] = v.dataVenda.split("-");
-      return `${mes}/${ano}`===filtroMes;
-    });
-  }
-
-  filtradas.sort((a,b)=> a.cliente.localeCompare(b.cliente,'pt-BR'));
-
-  tituloLista.textContent = filtro==="todas"?"Todas as Vendas":
-                          filtro==="pagas"?"Vendas Pagas":"Vendas Não Pagas";
-
-  filtradas.forEach(venda=>{
-    const div=document.createElement("div");
-    div.className="venda";
-    const statusClass=venda.pago?"pago":"nao-pago";
-    div.innerHTML=`
-      <span>
-        <strong>${venda.cliente}</strong> - R$ ${venda.valor.toFixed(2)}<br>
-        Venda: ${venda.dataVenda} | Pagamento: ${venda.dataPagamento? venda.dataPagamento:'-'}
-      </span>
-      <button class="${statusClass}" onclick="togglePago(${venda.id})">${venda.pago?'Pago':'Não Pago'}</button>
-      <button onclick="excluirVenda(${venda.id})">🗑</button>
-    `;
-    lista.appendChild(div);
+  let totalPagos=0,totalNaoPagos=0;
+  lista.forEach(v=>{
+    const card=document.createElement("div");
+    card.className="card";
+    card.innerHTML=`
+      <div><strong>${v.cliente}</strong> - R$ ${v.valor.toFixed(2)}<br><small>${new Date(v.dataVenda).toLocaleDateString()}</small></div>
+      <div style="text-align:right;">
+        <span class="${v.pago?'pago':'nao-pago'}">${v.pago?'Pago':'Não Pago'}</span><br>
+        <button onclick="togglePago(${v.id})"><i class="fa-solid fa-check"></i></button>
+        <button onclick="editarVenda(${v.id})"><i class="fa-solid fa-pen"></i></button>
+        <button onclick="excluirVenda(${v.id})"><i class="fa-solid fa-trash"></i></button>
+      </div>`;
+    div.appendChild(card);
+    if(v.pago) totalPagos+=v.valor; else totalNaoPagos+=v.valor;
   });
-
-  const totalPagas = filtradas.filter(v=>v.pago).reduce((acc,v)=>acc+v.valor,0);
-  const totalNaoPagas = filtradas.filter(v=>!v.pago).reduce((acc,v)=>acc+v.valor,0);
-  const countPagas = filtradas.filter(v=>v.pago).length;
-  const countNaoPagas = filtradas.filter(v=>!v.pago).length;
-  totaisDiv.innerHTML = `
-    <strong>Resumo:</strong><br>
-    Pagas: ${countPagas} vendas | R$ ${totalPagas.toFixed(2)}<br>
-    Não Pagas: ${countNaoPagas} vendas | R$ ${totalNaoPagas.toFixed(2)}
-  `;
+  document.getElementById("totais").innerHTML=`Total Pago: R$ ${totalPagos.toFixed(2)} | Total Não Pago: R$ ${totalNaoPagos.toFixed(2)}`;
 }
 
-// Alternar Pago/Não Pago
-window.togglePago = id => {
-  const venda = vendas.find(v=>v.id===id);
-  if(venda){
-    venda.pago = !venda.pago;
-    atualizarLista();
-  }
-};
+function toggleMenu(){
+  document.getElementById("menu").classList.toggle("hidden");
+  document.getElementById("conteudo").classList.toggle("full");
+}
 
-// Excluir venda da tela
-window.excluirVenda = id => {
-  vendas = vendas.filter(v=>v.id!==id);
-  gerarBotoesMeses();
-  atualizarLista();
-};
-
-// Inicializar app
 carregarVendas();
 </script>
 </body>
