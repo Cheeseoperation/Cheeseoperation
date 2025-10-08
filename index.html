@@ -1,125 +1,301 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Painel de Vendas</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-  :root{
-    --primary:#8B0000; /* vermelho vinho */
-    --bg:#ffffff;
-    --muted:#f4f4f6;
-    --success:#00b894;
-    --danger:#d63031;
-    --card-radius:12px;
-  }
-  *{box-sizing:border-box}
-  body{font-family:Inter, "Poppins",sans-serif;margin:0;background:var(--muted);color:#222;min-height:100vh;display:flex;align-items:stretch}
-  .app{width:100%;max-width:1100px;margin:28px auto;background:var(--bg);border-radius:18px;box-shadow:0 8px 30px rgba(0,0,0,0.08);overflow:hidden;display:grid;grid-template-columns:260px 1fr}
-  /* Sidebar */
-  .sidebar{
-    background:var(--primary);
-    color:#fff;
-    padding:20px;
-    display:flex;
-    flex-direction:column;
-    gap:12px;
-    transition: transform 0.3s ease;
-  }
-  .sidebar.hidden {
-    transform: translateX(-100%);
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    z-index: 1000;
-    box-shadow: 4px 0 12px rgba(0,0,0,0.3);
-  }
-  .brand{font-weight:700;font-size:1.15rem;display:flex;align-items:center;gap:10px}
-  .brand i{background:#fff;color:var(--primary);padding:8px;border-radius:8px}
-  .side-controls{margin-top:6px;display:flex;flex-direction:column;gap:8px}
-  .side-controls button{background:#fff;border:none;color:var(--primary);padding:10px;border-radius:10px;font-weight:600;cursor:pointer;text-align:left}
-  .side-controls button:hover{opacity:.95;transform:translateY(-2px)}
-  .months{margin-top:8px;display:flex;flex-direction:column;gap:8px;overflow:auto;max-height:40vh;padding-right:6px}
-  /* Main */
-  .main{padding:22px;display:flex;flex-direction:column;gap:16px}
-  header.app-header{
-    display:flex;justify-content:space-between;align-items:center;
-  }
-  .title{font-size:1.25rem;font-weight:700;color:var(--primary)}
-  .controls{display:flex;gap:12px;align-items:center}
-  .input-row{display:flex;gap:10px;flex-wrap:wrap}
-  input, button{padding:10px 12px;border-radius:10px;border:1px solid #e6e6e9;font-size:0.95rem}
-  input[type="date"]{padding:9px 10px}
-  .btn-primary{background:var(--primary);color:#fff;border:none;cursor:pointer;font-weight:700}
-  .btn-ghost{background:transparent;border:1px solid #ddd}
-  /* list */
-  .list{display:flex;flex-direction:column;gap:10px;max-height:58vh;overflow:auto;padding-right:6px}
-  .card{background:#fff;border-radius:var(--card-radius);padding:12px 14px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 18px rgba(0,0,0,0.04)}
-  .card-left{display:flex;flex-direction:column;gap:6px}
-  .client{font-weight:700}
-  .meta{font-size:0.85rem;color:#666}
-  .card-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
-  .status{font-weight:700;padding:6px 8px;border-radius:8px;font-size:0.85rem}
-  .status.pago{color:var(--success)}
-  .status.nao{color:var(--danger)}
-  .actions{display:flex;gap:8px}
-  .icon-btn{border:none;background:transparent;cursor:pointer;padding:8px;border-radius:8px}
-  .totals{margin-top:6px;background:var(--primary);color:#fff;padding:10px;border-radius:10px;text-align:center;font-weight:700}
-  /* toast + loader */
-  .toast-wrap{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:8px;z-index:9999}
-  .toast{background:#111;color:#fff;padding:10px 14px;border-radius:10px;opacity:0.95}
-  .loader{width:42px;height:42px;border-radius:50%;border:4px solid rgba(0,0,0,0.06);border-top-color:var(--primary);animation:spin 1s linear infinite;display:inline-block}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  /* responsive */
-  @media (max-width:900px){
-    .app{grid-template-columns:1fr; margin:12px}
-    .sidebar{
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 100vh;
-      transform: translateX(-100%);
-      z-index: 1000;
-      box-shadow: 4px 0 12px rgba(0,0,0,0.3);
-      padding: 12px;
-      gap: 10px;
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Painel de Vendas</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #8B0000;
+      --bg: #ffffff;
+      --muted: #f4f4f6;
+      --success: #00b894;
+      --danger: #d63031;
+      --card-radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: Inter, "Poppins", sans-serif;
+      margin: 0;
+      background: var(--muted);
+      color: #222;
+      min-height: 100vh;
+      display: flex;
+      align-items: stretch;
+    }
+    .app {
+      width: 100%;
+      max-width: 1100px;
+      margin: 28px auto;
+      background: var(--bg);
+      border-radius: 18px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+    }
+    .sidebar {
+      background: var(--primary);
+      color: #fff;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
       transition: transform 0.3s ease;
     }
-    .sidebar.visible {
-      transform: translateX(0);
+    .sidebar.closed {
+      transform: translateX(-100%);
     }
-    .months{display:none}
-    .list{max-height:40vh}
-  }
-  /* Menu hamburger button */
-  .menu-btn {
-    display:none;
-    background: var(--primary);
-    border:none;
-    color:#fff;
-    padding: 10px 14px;
-    font-size: 1.25rem;
-    border-radius: 8px;
-    cursor:pointer;
-  }
-  @media (max-width:900px) {
-    .menu-btn {
-      display:inline-block;
+    .brand {
+      font-weight: 700;
+      font-size: 1.15rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-  }
-</style>
+    .brand i {
+      background: #fff;
+      color: var(--primary);
+      padding: 8px;
+      border-radius: 8px;
+    }
+    .side-controls {
+      margin-top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .side-controls button {
+      background: #fff;
+      border: none;
+      color: var(--primary);
+      padding: 10px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+    }
+    .side-controls button:hover {
+      opacity: .95;
+      transform: translateY(-2px);
+    }
+    .months {
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow: auto;
+      max-height: 40vh;
+      padding-right: 6px;
+    }
+    .months button {
+      background: #fff;
+      border: none;
+      color: var(--primary);
+      padding: 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: left;
+    }
+    .months button.active {
+      font-weight: bold;
+      background-color: rgba(255,255,255,0.9);
+    }
+
+    .main {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    header.app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .input-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    input, button {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #e6e6e9;
+      font-size: 0.95rem;
+    }
+    input[type="date"] {
+      padding: 9px 10px;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 58vh;
+      overflow: auto;
+      padding-right: 6px;
+    }
+    .card {
+      background: #fff;
+      border-radius: var(--card-radius);
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.04);
+    }
+    .card-left {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .client {
+      font-weight: 700;
+    }
+    .meta {
+      font-size: 0.85rem;
+      color: #666;
+    }
+    .card-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+    }
+    .status {
+      font-weight: 700;
+      padding: 6px 8px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
+    .status.pago {
+      color: var(--success);
+    }
+    .status.nao {
+      color: var(--danger);
+    }
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+    .icon-btn {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 8px;
+    }
+    .totals {
+      margin-top: 6px;
+      background: var(--primary);
+      color: #fff;
+      padding: 10px;
+      border-radius: 10px;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .toast-wrap {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 9999;
+    }
+    .toast {
+      background: #111;
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 10px;
+      opacity: 0.95;
+    }
+    .loader {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 4px solid rgba(0,0,0,0.06);
+      border-top-color: var(--primary);
+      animation: spin 1s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Botão hamburguer */
+    #hamburgerBtn {
+      display: none;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 12px 14px;
+      font-size: 1.3rem;
+      border-radius: 8px;
+      cursor: pointer;
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 10000;
+    }
+
+    @media (max-width:900px) {
+      .app {
+        grid-template-columns: 1fr;
+        margin: 12px;
+      }
+      #hamburgerBtn {
+        display: block;
+      }
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 260px;
+        height: 100vh;
+        box-shadow: 3px 0 20px rgba(0,0,0,0.15);
+        background: var(--primary);
+        padding: 20px;
+        gap: 12px;
+        transform: translateX(-280px);
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+    }
+  </style>
 </head>
 <body>
+  <button id="hamburgerBtn" aria-label="Abrir/Fechar menu"><i class="fa-solid fa-bars"></i></button>
+
   <div class="app" role="application" aria-label="Painel de Vendas">
-    <aside class="sidebar hidden" id="sidebar">
+    <aside class="sidebar closed" id="sidebar">
       <div class="brand"><i class="fa-solid fa-cheese"></i> Painel</div>
       <div style="font-weight:600">Vendas</div>
       <div class="side-controls">
-        <button onclick="setFiltro(null,null)">Todas</button>
-        <button onclick="setFiltro('pago',null)">Pagas</button>
-        <button onclick="setFiltro('nao',null)">Não Pagas</button>
+        <button onclick="setFiltro(null, null)">Todas</button>
+        <button onclick="setFiltro('pago', null)">Pagas</button>
+        <button onclick="setFiltro('nao', null)">Não Pagas</button>
       </div>
       <div style="margin-top:8px;font-weight:600">Meses</div>
       <div class="months" id="mesesMenu"></div>
@@ -127,7 +303,6 @@
 
     <main class="main">
       <header class="app-header">
-        <button class="menu-btn" id="menuBtn" aria-label="Abrir menu filtros"><i class="fa-solid fa-bars"></i></button>
         <div class="title">Painel de Vendas</div>
         <div class="controls">
           <div id="loading" style="display:none" title="Carregando..."><span class="loader"></span></div>
@@ -145,267 +320,265 @@
 
       <section>
         <div class="list" id="listaVendas" aria-live="polite"></div>
-        <div class="totals" id="totais">Total Pago: R$ 0.00 | Total Não Pago: R$ 0.00</div>
+        <div class="totals" id="totais">Total Pago: R$ 0,00 | Total Não Pago: R$ 0,00</div>
       </section>
     </main>
   </div>
 
   <div class="toast-wrap" id="toasts" aria-live="polite"></div>
 
-<script>
-/* ====== CONFIG ====== */
-const API_URL = "https://script.google.com/macros/s/AKfycbycXqhk6YtdwZQOfbnx8OqnAwy8o9AkQYoZTXs24VZaAdaIZ-ELC77lPlHkKNOS1in3/exec";
-let vendas = [];
-let filtroMes = null;
-let filtroStatus = null;
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbycXqhk6YtdwZQOfbnx8OqnAwy8o9AkQYoZTXs24VZaAdaIZ-ELC77lPlHkKNOS1in3/exec";
+    let vendas = [];
+    let filtroMes = null;
+    let filtroStatus = null;
 
-/* ====== UTIL ====== */
-function showToast(msg, short=true){
-  const wrap = document.getElementById('toasts');
-  const t = document.createElement('div'); t.className='toast'; t.textContent=msg;
-  wrap.appendChild(t);
-  setTimeout(()=> { t.style.opacity='0'; setTimeout(()=>t.remove(),400); }, short?2200:4200);
-}
+    function showToast(msg, short = true) {
+      const wrap = document.getElementById('toasts');
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.textContent = msg;
+      wrap.appendChild(t);
+      setTimeout(() => {
+        t.style.opacity = '0';
+        setTimeout(() => t.remove(), 400);
+      }, short ? 2200 : 4200);
+    }
 
-function setLoading(on){
-  document.getElementById('loading').style.display = on ? 'inline-block' : 'none';
-}
+    function setLoading(on) {
+      document.getElementById('loading').style.display = on ? 'inline-block' : 'none';
+    }
 
-/* safe fetch with timeout */
-async function fetchWithTimeout(url, opts = {}, timeout = 10000){
-  const controller = new AbortController();
-  const id = setTimeout(()=>controller.abort(), timeout);
-  try {
-    const res = await fetch(url, {...opts, signal: controller.signal});
-    clearTimeout(id);
-    return res;
-  } catch(e){
-    clearTimeout(id);
-    throw e;
-  }
-}
+    async function fetchWithTimeout(url, opts = {}, timeout = 10000) {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeout);
+      try {
+        const res = await fetch(url, { ...opts, signal: controller.signal });
+        clearTimeout(id);
+        return res;
+      } catch (e) {
+        clearTimeout(id);
+        throw e;
+      }
+    }
 
-/* format helpers */
-function formatCurrency(n){ return Number(n||0).toFixed(2).replace('.',','); }
-function formatDate(iso){ try { return new Date(iso).toLocaleDateString(); } catch(e){ return iso; } }
+    async function carregarVendas() {
+      setLoading(true);
+      try {
+        const res = await fetchWithTimeout(API_URL, { cache: 'no-store' }, 12000);
+        if (!res.ok) throw new Error('Resposta não OK: ' + res.status);
+        const data = await res.json();
+        const map = new Map();
+        vendas = data.reduce((acc, row) => {
+          const id = String(row.id || row.ID || row.Id || '').trim();
+          if (!id) return acc;
+          if (map.has(id)) return acc;
+          map.set(id, true);
+          acc.push({
+            id,
+            cliente: row.cliente || row.Cliente || '',
+            valor: Number(row.valor || row.Valor || 0),
+            dataVenda: row.dataVenda || row.DataVenda || '',
+            pago: (row.pago === true || row.pago === 'true' || row.pago === 'TRUE')
+          });
+          return acc;
+        }, []);
+        gerarBotoesMeses();
+        atualizarLista();
+      } catch (err) {
+        console.error('Erro carregarVendas', err);
+        showToast('Erro ao carregar vendas. Verifique conexão.', false);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-/* ====== CRUD FRONT ====== */
-async function carregarVendas(){
-  setLoading(true);
-  try {
-    const res = await fetchWithTimeout(API_URL, {cache:'no-store'}, 12000);
-    if(!res.ok) throw new Error('Resposta não OK: '+res.status);
-    const data = await res.json();
-
-    // Normaliza: garante IDs e tipos corretos, remove duplicatas por ID
-    const map = new Map();
-    vendas = data.reduce((acc,row)=>{
-      const id = String(row.id || row.ID || row.Id || '').trim();
-      if(!id) return acc;
-      if(map.has(id)) return acc;
-      map.set(id,true);
-      acc.push({
-        id,
-        cliente: row.cliente || row.Cliente || '',
-        valor: Number(row.valor || row.Valor || 0),
-        dataVenda: row.dataVenda || row.DataVenda || '',
-        pago: (row.pago === true || row.pago === 'true' || row.pago === 'TRUE')
-      });
-      return acc;
-    }, []);
-
-    gerarBotoesMeses();
-    atualizarLista();
-  } catch(err){
-    console.error('Erro carregarVendas',err);
-    showToast('Erro ao carregar vendas. Verifique conexão.', false);
-  } finally {
-    setLoading(false);
-  }
-}
-
-/* Add: envia ao servidor, espera id gerado e só então adiciona local */
-document.getElementById('addBtn').addEventListener('click', async ()=>{
-  const cliente = document.getElementById('cliente').value.trim();
-  const valor = parseFloat(document.getElementById('valor').value);
-  const dataVenda = document.getElementById('dataVenda').value;
-  if(!cliente || isNaN(valor) || !dataVenda){ showToast('Preencha todos os campos'); return; }
-
-  const payload = { cliente, valor, dataVenda, pago: false };
-  setLoading(true);
-  try {
-    const res = await fetchWithTimeout(API_URL, {method:'POST', body: JSON.stringify(payload)}, 12000);
-    if(!res.ok) throw new Error('Erro no servidor');
-    const json = await res.json();
-    const id = String(json.id || json.ID || '');
-    if(!id){ showToast('Erro: servidor não retornou id', false); return; }
-    payload.id = id;
-    vendas.push(payload);
-    gerarBotoesMeses();
-    document.getElementById('cliente').value='';
-    document.getElementById('valor').value='';
-    document.getElementById('dataVenda').value='';
-    atualizarLista();
-    showToast('Venda adicionada');
-  } catch(err){
-    console.error('Erro adicionar venda', err);
-    showToast('Erro ao adicionar venda', false);
-  } finally {
-    setLoading(false);
-  }
-});
-
-/* Remove: enviar DELETE (ou POST com id e comando excluir) */
-async function removerVenda(id){
-  if(!confirm('Confirma exclusão?')) return;
-  setLoading(true);
-  try {
-    // Exemplo de chamada DELETE (se API suportar)
-    // const res = await fetch(`${API_URL}?id=${id}`, {method:'DELETE'});
-    // if(!res.ok) throw new Error('Erro no servidor');
-
-    // Como alternativa, se não suportar DELETE, envia POST com ação excluir
-    const res = await fetchWithTimeout(API_URL, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({id, excluir:true})
-    }, 12000);
-    if(!res.ok) throw new Error('Erro no servidor');
-
-    vendas = vendas.filter(v => v.id !== id);
-    gerarBotoesMeses();
-    atualizarLista();
-    showToast('Venda removida');
-  } catch(err){
-    console.error('Erro removerVenda', err);
-    showToast('Erro ao remover venda', false);
-  } finally {
-    setLoading(false);
-  }
-}
-
-/* Toggle pagamento */
-async function togglePago(id){
-  const venda = vendas.find(v => v.id === id);
-  if(!venda) return;
-  setLoading(true);
-  try {
-    const novoPago = !venda.pago;
-    const res = await fetchWithTimeout(API_URL, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({id, pago: novoPago})
-    }, 12000);
-    if(!res.ok) throw new Error('Erro no servidor');
-    venda.pago = novoPago;
-    atualizarLista();
-  } catch(err){
-    console.error('Erro togglePago', err);
-    showToast('Erro ao atualizar pagamento', false);
-  } finally {
-    setLoading(false);
-  }
-}
-
-/* ====== FILTROS ====== */
-function setFiltro(status, mes){
-  filtroStatus = status;
-  filtroMes = mes;
-  atualizarLista();
-}
-
-/* ====== LISTAGEM ====== */
-function atualizarLista(){
-  const container = document.getElementById('listaVendas');
-  container.innerHTML = '';
-
-  let totalPago = 0, totalNao = 0;
-  const filtradas = vendas.filter(v => {
-    if(filtroStatus && ((filtroStatus === 'pago' && !v.pago) || (filtroStatus === 'nao' && v.pago))) return false;
-    if(filtroMes && !v.dataVenda.startsWith(filtroMes)) return false;
-    return true;
-  });
-
-  if(filtradas.length === 0){
-    container.innerHTML = '<p>Nenhuma venda encontrada.</p>';
-  } else {
-    filtradas.forEach(v => {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `
-        <div class="card-left">
-          <div class="client">${v.cliente}</div>
-          <div class="meta">${formatDate(v.dataVenda)}</div>
-        </div>
-        <div class="card-right">
-          <div class="meta">R$ ${formatCurrency(v.valor)}</div>
-          <div class="status ${v.pago ? 'pago' : 'nao'}">${v.pago ? 'Pago' : 'Não Pago'}</div>
-          <div class="actions">
-            <button class="icon-btn" title="Alternar pagamento" aria-label="Alternar status pagamento para ${v.cliente}" onclick="togglePago('${v.id}')">
-              <i class="fa-solid fa-check"></i>
-            </button>
-            <button class="icon-btn" title="Remover venda" aria-label="Remover venda de ${v.cliente}" onclick="removerVenda('${v.id}')">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </div>
-        </div>
-      `;
-      container.appendChild(card);
-      if(v.pago) totalPago += v.valor;
-      else totalNao += v.valor;
+    document.getElementById('addBtn').addEventListener('click', async () => {
+      const cliente = document.getElementById('cliente').value.trim();
+      const valor = parseFloat(document.getElementById('valor').value);
+      const dataVenda = document.getElementById('dataVenda').value;
+      if (!cliente || isNaN(valor) || !dataVenda) {
+        showToast('Preencha todos os campos');
+        return;
+      }
+      setLoading(true);
+      try {
+        const payload = { cliente, valor, dataVenda, pago: false };
+        const res = await fetchWithTimeout(API_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) }, 12000);
+        if (!res.ok) throw new Error('Erro no servidor');
+        const json = await res.json();
+        const id = String(json.id || json.ID || '');
+        if (!id) throw new Error('Servidor não retornou ID');
+        payload.id = id;
+        vendas.push(payload);
+        gerarBotoesMeses();
+        document.getElementById('cliente').value = '';
+        document.getElementById('valor').value = '';
+        document.getElementById('dataVenda').value = '';
+        atualizarLista();
+        showToast('Venda adicionada');
+      } catch (err) {
+        console.error('Erro adicionar venda', err);
+        showToast('Erro ao adicionar venda', false);
+      } finally {
+        setLoading(false);
+      }
     });
-  }
-  document.getElementById('totais').textContent = `Total Pago: R$ ${formatCurrency(totalPago)} | Total Não Pago: R$ ${formatCurrency(totalNao)}`;
-}
 
-/* ====== MESSES ====== */
-function gerarBotoesMeses(){
-  const mesesContainer = document.getElementById('mesesMenu');
-  mesesContainer.innerHTML = '';
+    async function togglePago(id) {
+      const v = vendas.find(x => x.id === id);
+      if (!v) return;
+      // Atualização otimista
+      v.pago = !v.pago;
+      atualizarLista();
+      try {
+        await fetchWithTimeout(API_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(v) }, 10000);
+        showToast('Status atualizado');
+      } catch (err) {
+        console.error('Erro togglePago', err);
+        // Reverte em caso de erro
+        v.pago = !v.pago;
+        atualizarLista();
+        showToast('Erro ao atualizar status', false);
+      }
+    }
 
-  // Pega meses únicos das vendas com formato YYYY-MM
-  const mesesUnicos = [...new Set(vendas.map(v => v.dataVenda.slice(0,7)))].sort((a,b)=>b.localeCompare(a));
+    async function excluirVenda(id) {
+      if (!confirm('Confirmar exclusão?')) return;
+      const index = vendas.findIndex(v => v.id === id);
+      if (index === -1) return;
+      const backup = vendas[index];
+      vendas.splice(index, 1);
+      gerarBotoesMeses();
+      atualizarLista();
+      showToast('Excluindo...');
+      try {
+        await fetchWithTimeout(API_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ acao: 'excluir', id }) }, 10000);
+        showToast('Venda excluída');
+      } catch (err) {
+        console.error('Erro excluir', err);
+        // Reverte
+        vendas.splice(index, 0, backup);
+        gerarBotoesMeses();
+        atualizarLista();
+        showToast('Erro ao excluir', false);
+      }
+    }
 
-  if(mesesUnicos.length === 0){
-    mesesContainer.innerHTML = '<p>Nenhum mês com vendas.</p>';
-    return;
-  }
+    function setFiltro(status, mes) {
+      filtroStatus = status;
+      filtroMes = mes;
+      gerarBotoesMeses();
+      atualizarLista();
+    }
 
-  mesesUnicos.forEach(mes => {
-    // Formata YYYY-MM para "MM/YYYY"
-    const anoMes = mes.split('-');
-    const texto = `${anoMes[1]}/${anoMes[0]}`;
-    const btn = document.createElement('button');
-    btn.textContent = texto;
-    btn.style.width = '100%';
-    btn.style.textAlign = 'left';
-    btn.onclick = () => setFiltro(null, mes);
-    mesesContainer.appendChild(btn);
-  });
-}
+    function gerarBotoesMeses() {
+      const div = document.getElementById('mesesMenu');
+      div.innerHTML = '';
 
-/* ====== MENU HAMBURGUER ====== */
-const sidebar = document.getElementById('sidebar');
-const menuBtn = document.getElementById('menuBtn');
+      // Botão “Todos os meses”
+      const btnAll = document.createElement('button');
+      btnAll.textContent = 'Todos os Meses';
+      if (filtroMes === null) btnAll.classList.add('active');
+      btnAll.onclick = () => setFiltro(filtroStatus, null);
+      div.appendChild(btnAll);
 
-menuBtn.addEventListener('click', () => {
-  sidebar.classList.toggle('hidden');
-  sidebar.classList.toggle('visible');
-});
+      const setMes = new Set();
+      vendas.forEach(v => {
+        if (v.dataVenda) {
+          const d = new Date(v.dataVenda);
+          if (!isNaN(d)) {
+            const ano = d.getFullYear();
+            const mes = d.getMonth() + 1;
+            setMes.add(`${ano}-${mes}`);
+          }
+        }
+      });
+      const mesesArr = Array.from(setMes).sort((a, b) => {
+        const [ay, am] = a.split('-').map(Number);
+        const [by, bm] = b.split('-').map(Number);
+        return new Date(ay, am - 1) - new Date(by, bm - 1);
+      });
+      const nomes = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+      mesesArr.forEach(m => {
+        const [ano, mes] = m.split('-').map(Number);
+        const btn = document.createElement('button');
+        btn.textContent = `${nomes[mes - 1]} ${ano}`;
+        if (filtroMes === `${ano}-${mes}`) btn.classList.add('active');
+        btn.onclick = () => setFiltro(filtroStatus, `${ano}-${mes}`);
+        div.appendChild(btn);
+      });
+    }
 
-// Fecha o menu se clicar fora (em mobile)
-document.addEventListener('click', (e) => {
-  if(window.innerWidth > 900) return; // só mobile
-  if(!sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
-    sidebar.classList.add('hidden');
-    sidebar.classList.remove('visible');
-  }
-});
+    function atualizarLista() {
+      const container = document.getElementById('listaVendas');
+      container.innerHTML = '';
+      let lista = [...vendas];
+      if (filtroStatus === 'pago') lista = lista.filter(v => v.pago);
+      if (filtroStatus === 'nao') lista = lista.filter(v => !v.pago);
+      if (filtroMes !== null) {
+        lista = lista.filter(v => {
+          if (!v.dataVenda) return false;
+          const d = new Date(v.dataVenda);
+          if (isNaN(d)) return false;
+          const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
+          return key === filtroMes;
+        });
+      }
+      lista.sort((a, b) => a.cliente.localeCompare(b, 'pt-BR'));
 
-/* ====== INICIALIZA ====== */
-window.onload = () => {
-  carregarVendas();
-};
-</script>
+      let totalPagos = 0, totalNao = 0;
+      lista.forEach(v => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const left = document.createElement('div');
+        left.className = 'card-left';
+        const right = document.createElement('div');
+        right.className = 'card-right';
+        left.innerHTML = `<div class="client">${v.cliente}</div><div class="meta">${v.dataVenda}</div>`;
+        const statusSpan = document.createElement('div');
+        statusSpan.className = 'status ' + (v.pago ? 'pago' : 'nao');
+        statusSpan.textContent = v.pago ? 'Pago' : 'Não Pago';
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+        actions.innerHTML = `
+          <button class="icon-btn" title="Marcar/Desmarcar" onclick="togglePago('${v.id}')">
+            <i class="fa-solid fa-check"></i>
+          </button>
+          <button class="icon-btn" title="Excluir" onclick="excluirVenda('${v.id}')">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        `;
+        right.appendChild(statusSpan);
+        right.appendChild(actions);
+        card.appendChild(left);
+        card.appendChild(right);
+        container.appendChild(card);
+
+        if (v.pago) totalPagos += v.valor;
+        else totalNao += v.valor;
+      });
+      document.getElementById('totais').textContent =
+        `Total Pago: R$ ${totalPagos.toFixed(2)} | Total Não Pago: R$ ${totalNao.toFixed(2)}`;
+    }
+
+    // Hamburger toggle
+    const btnHamb = document.getElementById('hamburgerBtn');
+    const sidebarEl = document.getElementById('sidebar');
+    btnHamb.addEventListener('click', () => {
+      sidebarEl.classList.toggle('open');
+    });
+    document.addEventListener('click', e => {
+      if (window.innerWidth <= 900) {
+        if (!sidebarEl.contains(e.target) && e.target !== btnHamb) {
+          sidebarEl.classList.remove('open');
+        }
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      carregarVendas();
+    });
+  </script>
 </body>
 </html>
