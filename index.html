@@ -1,86 +1,353 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Painel de Vendas</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-  :root{
-    --primary:#8B0000; /* vermelho vinho */
-    --bg:#ffffff;
-    --muted:#f4f4f6;
-    --success:#00b894;
-    --danger:#d63031;
-    --card-radius:12px;
-  }
-  *{box-sizing:border-box}
-  body{font-family:Inter, "Poppins",sans-serif;margin:0;background:var(--muted);color:#222;min-height:100vh;display:flex;align-items:stretch}
-  .app{width:100%;max-width:1100px;margin:28px auto;background:var(--bg);border-radius:18px;box-shadow:0 8px 30px rgba(0,0,0,0.08);overflow:hidden;display:grid;grid-template-columns:260px 1fr}
-  /* Sidebar */
-  .sidebar{background:var(--primary);color:#fff;padding:20px;display:flex;flex-direction:column;gap:12px}
-  .brand{font-weight:700;font-size:1.15rem;display:flex;align-items:center;gap:10px}
-  .brand i{background:#fff;color:var(--primary);padding:8px;border-radius:8px}
-  .side-controls{margin-top:6px;display:flex;flex-direction:column;gap:8px}
-  .side-controls button{background:#fff;border:none;color:var(--primary);padding:10px;border-radius:10px;font-weight:600;cursor:pointer;text-align:left}
-  .side-controls button:hover{opacity:.95;transform:translateY(-2px)}
-  .months{margin-top:8px;display:flex;flex-direction:column;gap:8px;overflow:auto;max-height:40vh;padding-right:6px}
-  /* Main */
-  .main{padding:22px;display:flex;flex-direction:column;gap:16px}
-  header.app-header{display:flex;justify-content:space-between;align-items:center}
-  .title{font-size:1.25rem;font-weight:700;color:var(--primary)}
-  .controls{display:flex;gap:12px;align-items:center}
-  .input-row{display:flex;gap:10px;flex-wrap:wrap}
-  input, button{padding:10px 12px;border-radius:10px;border:1px solid #e6e6e9;font-size:0.95rem}
-  input[type="date"]{padding:9px 10px}
-  .btn-primary{background:var(--primary);color:#fff;border:none;cursor:pointer;font-weight:700}
-  .btn-ghost{background:transparent;border:1px solid #ddd}
-  /* list */
-  .list{display:flex;flex-direction:column;gap:10px;max-height:58vh;overflow:auto;padding-right:6px}
-  .card{background:#fff;border-radius:var(--card-radius);padding:12px 14px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 18px rgba(0,0,0,0.04)}
-  .card-left{display:flex;flex-direction:column;gap:6px}
-  .client{font-weight:700}
-  .meta{font-size:0.85rem;color:#666}
-  .card-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
-  .status{font-weight:700;padding:6px 8px;border-radius:8px;font-size:0.85rem}
-  .status.pago{color:var(--success)}
-  .status.nao{color:var(--danger)}
-  .actions{display:flex;gap:8px}
-  .icon-btn{border:none;background:transparent;cursor:pointer;padding:8px;border-radius:8px}
-  .totals{margin-top:6px;background:var(--primary);color:#fff;padding:10px;border-radius:10px;text-align:center;font-weight:700}
-  /* toast + loader */
-  .toast-wrap{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:8px;z-index:9999}
-  .toast{background:#111;color:#fff;padding:10px 14px;border-radius:10px;opacity:0.95}
-  .loader{width:42px;height:42px;border-radius:50%;border:4px solid rgba(0,0,0,0.06);border-top-color:var(--primary);animation:spin 1s linear infinite;display:inline-block}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  /* responsive */
-  @media (max-width:900px){
-    .app{grid-template-columns:1fr; margin:12px}
-    .sidebar{position:sticky;top:0;display:flex;flex-direction:row;gap:10px;align-items:center;padding:12px}
-    .months{display:none}
-    .list{max-height:40vh}
-  }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Painel de Vendas</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #8B0000;
+      --bg: #ffffff;
+      --muted: #f4f4c6;
+      --success: #00b894;
+      --danger: #d63031;
+      --card-radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: Inter, "Poppins", sans-serif;
+      margin: 0;
+      background: var(--muted);
+      color: #222;
+      min-height: 100vh;
+      display: flex;
+      align-items: stretch;
+    }
+    .app {
+      width: 100%;
+      max-width: 1100px;
+      margin: 28px auto;
+      background: var(--bg);
+      border-radius: 18px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+    }
+    .sidebar {
+      background: var(--primary);
+      color: #fff;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .brand {
+      font-weight: 700;
+      font-size: 1.15rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand i {
+      background: #fff;
+      color: var(--primary);
+      padding: 8px;
+      border-radius: 8px;
+    }
+    .side-controls {
+      margin-top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .side-controls button {
+      background: #fff;
+      border: none;
+      color: var(--primary);
+      padding: 10px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+    }
+    .side-controls button:hover {
+      opacity: .95;
+      transform: translateY(-2px);
+    }
+    .months {
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow: auto;
+      max-height: 40vh;
+      padding-right: 6px;
+    }
+    .main {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    header.app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .input-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    input, button {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #e6e6e9;
+      font-size: 0.95rem;
+    }
+    input[type="date"] {
+      padding: 9px 10px;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid #ddd;
+    }
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 58vh;
+      overflow: auto;
+      padding-right: 6px;
+    }
+    .card {
+      background: #fff;
+      border-radius: var(--card-radius);
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+    }
+    .card-left {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .client {
+      font-weight: 700;
+    }
+    .meta {
+      font-size: 0.85rem;
+      color: #666;
+    }
+    .card-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+    }
+    .status {
+      font-weight: 700;
+      padding: 6px 8px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
+    .status.pago {
+      color: var(--success);
+    }
+    .status.nao {
+      color: var(--danger);
+    }
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+    .icon-btn {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 8px;
+    }
+    .totals {
+      margin-top: 6px;
+      background: var(--primary);
+      color: #fff;
+      padding: 10px;
+      border-radius: 10px;
+      text-align: center;
+      font-weight: 700;
+    }
+    .toast-wrap {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 9999;
+    }
+    .toast {
+      background: #111;
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 10px;
+      opacity: 0.95;
+    }
+    .loader {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 4px solid rgba(0, 0, 0, 0.06);
+      border-top-color: var(--primary);
+      animation: spin 1s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Hamburguer menu */
+    .menu-toggle {
+      display: none;
+      background: #fff;
+      color: var(--primary);
+      border: none;
+      padding: 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+
+    @media (max-width: 900px) {
+      .app {
+        grid-template-columns: 1fr;
+        margin: 0 12px;
+        border-radius: 10px;
+      }
+      .menu-toggle {
+        display: block;
+      }
+      .sidebar {
+        flex-direction: column;
+        align-items: flex-start;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        padding: 12px;
+      }
+      .sidebar-content {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .sidebar-content.open {
+        display: flex;
+      }
+      .side-controls {
+        flex-direction: column;
+        width: 100%;
+      }
+      .side-controls button {
+        width: 100%;
+        text-align: center;
+      }
+      .months {
+        display: none;
+      }
+      .main {
+        padding: 16px 12px;
+      }
+      .title {
+        font-size: 1.1rem;
+      }
+      .input-row {
+        flex-direction: column;
+        gap: 10px;
+      }
+      .input-row input,
+      .input-row button {
+        width: 100%;
+      }
+      .list {
+        max-height: none;
+        overflow: visible;
+      }
+      .card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      .card-right {
+        align-items: flex-start;
+        width: 100%;
+      }
+      .actions {
+        justify-content: flex-start;
+      }
+      .totals {
+        font-size: 0.9rem;
+        padding: 10px;
+        margin-bottom: 60px;
+      }
+      .toast-wrap {
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="app" role="application" aria-label="Painel de Vendas">
     <aside class="sidebar" id="sidebar">
-      <div class="brand"><i class="fa-solid fa-cheese"></i> Painel</div>
-      <div style="font-weight:600">Vendas</div>
-      <div class="side-controls">
-        <button onclick="setFiltro(null,null)">Todas</button>
-        <button onclick="setFiltro('pago',null)">Pagas</button>
-        <button onclick="setFiltro('nao',null)">Não Pagas</button>
+      <div class="brand">
+        <i class="fa-solid fa-cheese"></i> Painel
       </div>
-      <div style="margin-top:8px;font-weight:600">Meses</div>
-      <div class="months" id="mesesMenu"></div>
+      <button id="menuToggle" class="menu-toggle" onclick="toggleMenuMobile()" aria-label="Abrir/Fechar Menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <div id="sidebar-content" class="sidebar-content">
+        <div style="font-weight:600">Vendas</div>
+        <div class="side-controls">
+          <button onclick="setFiltro(null,null)">Todas</button>
+          <button onclick="setFiltro('pago',null)">Pagas</button>
+          <button onclick="setFiltro('nao',null)">Não Pagas</button>
+        </div>
+        <div style="margin-top:8px;font-weight:600">Meses</div>
+        <div class="months" id="mesesMenu"></div>
+      </div>
     </aside>
 
     <main class="main">
       <header class="app-header">
         <div class="title">Painel de Vendas</div>
         <div class="controls">
-          <div id="loading" style="display:none" title="Carregando..."><span class="loader"></span></div>
+          <div id="loading" style="display:none" title="Carregando...">
+            <span class="loader"></span>
+          </div>
         </div>
       </header>
 
@@ -89,232 +356,338 @@
           <input id="cliente" placeholder="Nome do cliente" autocomplete="off">
           <input id="valor" type="number" placeholder="Valor (R$)" min="0" step="0.01">
           <input id="dataVenda" type="date">
-          <button class="btn-primary" id="addBtn"><i class="fa-solid fa-plus"></i>&nbsp;Adicionar</button>
+          <button class="btn-primary" id="addBtn">
+            <i class="fa-solid fa-plus"></i>&nbsp;Adicionar
+          </button>
         </div>
       </section>
 
       <section>
         <div class="list" id="listaVendas" aria-live="polite"></div>
-        <div class="totals" id="totais">Total Pago: R$ 0.00 | Total Não Pago: R$ 0.00</div>
+        <div class="totals" id="totais">
+          Total Pago: R$ 0.00 | Total Não Pago: R$ 0.00
+        </div>
       </section>
     </main>
   </div>
 
   <div class="toast-wrap" id="toasts" aria-live="polite"></div>
 
-<script>
-/* ====== CONFIG ====== */
-const API_URL = "https://script.google.com/macros/s/AKfycbycXqhk6YtdwZQOfbnx8OqnAwy8o9AkQYoZTXs24VZaAdaIZ-ELC77lPlHkKNOS1in3/exec";
-let vendas = [];
-let filtroMes = null;
-let filtroStatus = null;
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbycXqhk6YtdwZQOfbnx8OqnAwy8o9AkQYoZTXs24VZaAdaIZ-ELC77lPlHkKNOS1in3/exec";
 
-/* ====== UTIL ====== */
-function showToast(msg, short=true){
-  const wrap = document.getElementById('toasts');
-  const t = document.createElement('div'); t.className='toast'; t.textContent=msg;
-  wrap.appendChild(t);
-  setTimeout(()=> { t.style.opacity='0'; setTimeout(()=>t.remove(),400); }, short?2200:4200);
-}
+    let vendas = [];
+    let filtroMes = null;
+    let filtroStatus = null;
 
-function setLoading(on){
-  document.getElementById('loading').style.display = on ? 'inline-block' : 'none';
-}
+    function showToast(msg, short = true) {
+      const wrap = document.getElementById('toasts');
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.textContent = msg;
+      wrap.appendChild(t);
+      setTimeout(() => {
+        t.style.opacity = '0';
+        setTimeout(() => t.remove(), 400);
+      }, short ? 2200 : 4200);
+    }
 
-/* safe fetch with timeout */
-async function fetchWithTimeout(url, opts = {}, timeout = 10000){
-  const controller = new AbortController();
-  const id = setTimeout(()=>controller.abort(), timeout);
-  try {
-    const res = await fetch(url, {...opts, signal: controller.signal});
-    clearTimeout(id);
-    return res;
-  } catch(e){
-    clearTimeout(id);
-    throw e;
-  }
-}
+    function setLoading(on) {
+      document.getElementById('loading').style.display = on ? 'inline-block' : 'none';
+    }
 
-/* format helpers */
-function formatCurrency(n){ return Number(n||0).toFixed(2).replace('.',','); }
-function formatDate(iso){ try { return new Date(iso).toLocaleDateString(); } catch(e){ return iso; } }
+    async function fetchWithTimeout(url, opts = {}, timeout = 10000) {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeout);
+      try {
+        const res = await fetch(url, { ...opts, signal: controller.signal });
+        clearTimeout(id);
+        return res;
+      } catch (e) {
+        clearTimeout(id);
+        throw e;
+      }
+    }
 
-/* ====== CRUD FRONT ====== */
-async function carregarVendas(){
-  setLoading(true);
-  try {
-    const res = await fetchWithTimeout(API_URL, {cache:'no-store'}, 12000);
-    if(!res.ok) throw new Error('Resposta não OK: '+res.status);
-    const data = await res.json();
+    function formatCurrency(n) {
+      return Number(n || 0).toFixed(2).replace('.', ',');
+    }
+    function formatDate(iso) {
+      try {
+        return new Date(iso).toLocaleDateString();
+      } catch (e) {
+        return iso;
+      }
+    }
 
-    // Normaliza: garante IDs e tipos corretos, remove duplicatas por ID
-    const map = new Map();
-    vendas = data.reduce((acc,row)=>{
-      // row may come with numbers as strings; normalize
-      const id = String(row.id || row.ID || row.Id || '').trim();
-      if(!id) return acc; // ignora linhas sem id
-      if(map.has(id)) return acc; // ignora duplicatas
-      map.set(id,true);
-      acc.push({
-        id,
-        cliente: row.cliente || row.Cliente || '',
-        valor: Number(row.valor || row.Valor || 0),
-        dataVenda: row.dataVenda || row.DataVenda || '',
-        pago: (row.pago === true || row.pago === 'true' || row.pago === 'TRUE')
+    // Carrega vendas do servidor, evita duplicatas por id
+    async function carregarVendas() {
+      setLoading(true);
+      try {
+        const res = await fetchWithTimeout(API_URL, { cache: 'no-store' }, 12000);
+        if (!res.ok) throw new Error('Resposta não OK: ' + res.status);
+        const data = await res.json();
+
+        const map = new Map();
+        vendas = data.reduce((acc, row) => {
+          const id = String(row.id || row.ID || row.Id || '').trim();
+          if (!id) return acc;
+          if (map.has(id)) return acc;
+          map.set(id, true);
+          acc.push({
+            id,
+            cliente: row.cliente || row.Cliente || '',
+            valor: Number(row.valor || row.Valor || 0),
+            dataVenda: row.dataVenda || row.DataVenda || '',
+            pago: (row.pago === true || row.pago === 'true' || row.pago === 'TRUE')
+          });
+          return acc;
+        }, []);
+
+        gerarBotoesMeses();
+        atualizarLista();
+      } catch (err) {
+        console.error('Erro carregarVendas', err);
+        showToast('Erro ao carregar vendas. Verifique conexão.', false);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    document.getElementById('addBtn').addEventListener('click', async () => {
+      const cliente = document.getElementById('cliente').value.trim();
+      const valor = parseFloat(document.getElementById('valor').value);
+      const dataVenda = document.getElementById('dataVenda').value;
+      if (!cliente || isNaN(valor) || !dataVenda) {
+        showToast('Preencha todos os campos');
+        return;
+      }
+
+      // Cria id temporário local para evitar duplicações
+      const idTemp = 'temp_' + Math.random().toString(36).substring(2, 10);
+      const payload = { id: idTemp, cliente, valor, dataVenda, pago: false };
+
+      // Atualiza interface imediatamente (otimista)
+      vendas.push(payload);
+      gerarBotoesMeses();
+      atualizarLista();
+      showToast('Adicionando venda...');
+
+      // Limpa inputs
+      document.getElementById('cliente').value = '';
+      document.getElementById('valor').value = '';
+      document.getElementById('dataVenda').value = '';
+
+      // Envia para servidor
+      try {
+        const res = await fetchWithTimeout(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ cliente, valor, dataVenda, pago: false })
+        }, 12000);
+
+        if (!res.ok) throw new Error('Erro no servidor');
+        const json = await res.json();
+        const novoId = String(json.id || json.ID || '');
+
+        if (novoId) {
+          // Substitui id temporário pelo novo id do servidor
+          vendas = vendas.map(v => {
+            if (v.id === idTemp) {
+              v.id = novoId;
+            }
+            return v;
+          });
+        }
+        gerarBotoesMeses();
+        atualizarLista();
+        showToast('Venda adicionada');
+      } catch (err) {
+        console.error('Erro ao adicionar', err);
+        // Reverte ação local se falhar
+        vendas = vendas.filter(v => v.id !== idTemp);
+        gerarBotoesMeses();
+        atualizarLista();
+        showToast('Erro ao adicionar venda', false);
+      }
+    });
+
+    async function togglePago(id) {
+      const v = vendas.find(x => x.id === id);
+      if (!v) return;
+
+      // Otimista: altera localmente
+      v.pago = !v.pago;
+      atualizarLista();
+
+      try {
+        await fetchWithTimeout(API_URL, {
+          method: 'POST',
+          body: JSON.stringify(v)
+        }, 10000);
+        showToast('Status atualizado');
+      } catch (err) {
+        console.error('Erro togglePago', err);
+        // Reverte em caso de erro
+        v.pago = !v.pago;
+        atualizarLista();
+        showToast('Erro ao atualizar status', false);
+      }
+    }
+
+    async function excluirVenda(id) {
+      if (!confirm('Confirmar exclusão?')) return;
+      const idx = vendas.findIndex(v => v.id === id);
+      if (idx === -1) return;
+      const backup = vendas[idx];
+      // Remover localmente
+      vendas.splice(idx, 1);
+      gerarBotoesMeses();
+      atualizarLista();
+      showToast('Excluindo...');
+
+      try {
+        const res = await fetchWithTimeout(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ acao: 'excluir', id })
+        }, 10000);
+        if (!res.ok) throw new Error('Erro servidor');
+        showToast('Venda excluída');
+      } catch (err) {
+        console.error('Erro excluir', err);
+        // Reverte remoção local
+        vendas.splice(idx, 0, backup);
+        gerarBotoesMeses();
+        atualizarLista();
+        showToast('Erro ao excluir', false);
+      }
+    }
+
+    async function editarVenda(id) {
+      const v = vendas.find(x => x.id === id);
+      if (!v) return;
+      const novoNome = prompt('Editar cliente:', v.cliente);
+      if (novoNome === null) return;
+      const novoValor = prompt('Editar valor (use ponto ou vírgula):', v.valor);
+      if (novoValor === null) return;
+      const novaData = prompt('Editar data (YYYY-MM-DD):', v.dataVenda);
+      if (novaData === null) return;
+
+      const backup = { ...v };
+      v.cliente = String(novoNome).trim();
+      v.valor = Number(String(novoValor).replace(',', '.')) || 0;
+      v.dataVenda = novaData;
+
+      gerarBotoesMeses();
+      atualizarLista();
+      showToast('Salvando...');
+
+      try {
+        await fetchWithTimeout(API_URL, {
+          method: 'POST',
+          body: JSON.stringify(v)
+        }, 10000);
+        showToast('Venda atualizada');
+      } catch (err) {
+        console.error('Erro salvarEdicao', err);
+        // Reverte em caso de erro
+        Object.assign(v, backup);
+        gerarBotoesMeses();
+        atualizarLista();
+        showToast('Erro ao salvar edição', false);
+      }
+    }
+
+    function gerarBotoesMeses() {
+      const div = document.getElementById('mesesMenu');
+      div.innerHTML = '';
+      const setMes = new Set(vendas.map(v => {
+        try {
+          const d = new Date(v.dataVenda);
+          return `${d.getFullYear()}-${d.getMonth() + 1}`;
+        } catch (e) {
+          return '';
+        }
+      }));
+      const meses = [...setMes].filter(Boolean).sort((a, b) => {
+        return new Date(a + '-01') - new Date(b + '-01');
       });
-      return acc;
-    }, []);
+      const nomes = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+      meses.forEach(m => {
+        const [ano, mes] = m.split('-');
+        const btn = document.createElement('button');
+        btn.textContent = `${nomes[Number(mes)-1] || mes} ${ano}`;
+        btn.style.border = 'none';
+        btn.style.padding = '8px';
+        btn.style.borderRadius = '8px';
+        btn.style.cursor = 'pointer';
+        btn.onclick = () => { setFiltro(null, m); };
+        div.appendChild(btn);
+      });
+    }
 
-    gerarBotoesMeses();
-    atualizarLista();
-  } catch(err){
-    console.error('Erro carregarVendas',err);
-    showToast('Erro ao carregar vendas. Verifique conexão.', false);
-  } finally {
-    setLoading(false);
-  }
-}
+    function setFiltro(status, mes) {
+      filtroStatus = status;
+      filtroMes = mes || null;
+      gerarBotoesMeses();
+      atualizarLista();
+    }
 
-/* Add: envia ao servidor, espera id gerado e só então adiciona local */
-document.getElementById('addBtn').addEventListener('click', async ()=>{
-  const cliente = document.getElementById('cliente').value.trim();
-  const valor = parseFloat(document.getElementById('valor').value);
-  const dataVenda = document.getElementById('dataVenda').value;
-  if(!cliente || isNaN(valor) || !dataVenda){ showToast('Preencha todos os campos'); return; }
+    function atualizarLista() {
+      const div = document.getElementById('listaVendas');
+      div.innerHTML = '';
+      let lista = [...vendas];
+      if (filtroMes) {
+        lista = lista.filter(v => {
+          const d = new Date(v.dataVenda);
+          return `${d.getFullYear()}-${d.getMonth()+1}` === filtroMes;
+        });
+      }
+      if (filtroStatus === 'pago') lista = lista.filter(v => v.pago);
+      if (filtroStatus === 'nao') lista = lista.filter(v => !v.pago);
+      lista.sort((a, b) => a.cliente.localeCompare(b.cliente, 'pt-BR'));
 
-  const payload = { cliente, valor, dataVenda, pago: false };
-  setLoading(true);
-  try {
-    const res = await fetchWithTimeout(API_URL, {method:'POST', body: JSON.stringify(payload)}, 12000);
-    if(!res.ok) throw new Error('Erro no servidor');
-    const json = await res.json();
-    // servidor devolve id
-    const id = String(json.id || json.ID || '');
-    if(!id){ showToast('Erro: servidor não retornou id', false); return; }
-    payload.id = id;
-    vendas.push(payload);
-    gerarBotoesMeses();
-    document.getElementById('cliente').value='';
-    document.getElementById('valor').value='';
-    document.getElementById('dataVenda').value='';
-    atualizarLista();
-    showToast('Venda adicionada');
-  } catch(err){
-    console.error('Erro adicionar',err);
-    showToast('Erro ao adicionar venda', false);
-  } finally { setLoading(false); }
-});
+      let totalPagos = 0, totalNao = 0;
+      lista.forEach(v => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const left = document.createElement('div');
+        left.className = 'card-left';
+        const right = document.createElement('div');
+        right.className = 'card-right';
+        left.innerHTML = `<div class="client">${v.cliente}</div>
+           <div class="meta">R$ ${formatCurrency(v.valor)} • ${formatDate(v.dataVenda)}</div>`;
+        const statusSpan = document.createElement('div');
+        statusSpan.className = 'status ' + (v.pago ? 'pago' : 'nao');
+        statusSpan.textContent = v.pago ? 'Pago' : 'Não Pago';
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+        actions.innerHTML = `
+          <button class="icon-btn" title="Marcar/Desmarcar" onclick="togglePago('${v.id}')"><i class="fa-solid fa-check"></i></button>
+          <button class="icon-btn" title="Editar" onclick="editarVenda('${v.id}')"><i class="fa-solid fa-pen"></i></button>
+          <button class="icon-btn" title="Excluir" onclick="excluirVenda('${v.id}')"><i class="fa-solid fa-trash"></i></button>
+        `;
+        right.appendChild(statusSpan);
+        right.appendChild(actions);
+        card.appendChild(left);
+        card.appendChild(right);
+        div.appendChild(card);
 
-/* Toggle pago */
-async function togglePago(id){
-  const v = vendas.find(x=>x.id===id);
-  if(!v) return;
-  v.pago = !v.pago;
-  atualizarLista();
-  // enviar atualização
-  try {
-    await fetchWithTimeout(API_URL, {method:'POST', body: JSON.stringify(v)}, 10000);
-    showToast('Status atualizado');
-  } catch(err){
-    console.error('Erro togglePago',err);
-    showToast('Erro ao atualizar status', false);
-  }
-}
+        if (v.pago) totalPagos += v.valor;
+        else totalNao += v.valor;
+      });
 
-/* Excluir */
-async function excluirVenda(id){
-  if(!confirm('Confirmar exclusão?')) return;
-  try {
-    const res = await fetchWithTimeout(API_URL, {method:'POST', body: JSON.stringify({acao:'excluir', id})}, 10000);
-    if(!res.ok) throw new Error('Erro servidor');
-    vendas = vendas.filter(x=>x.id!==id);
-    gerarBotoesMeses();
-    atualizarLista();
-    showToast('Venda excluída');
-  } catch(err){
-    console.error('Erro excluir',err);
-    showToast('Erro ao excluir', false);
-  }
-}
+      document.getElementById('totais').textContent =
+        `Total Pago: R$ ${formatCurrency(totalPagos)} | Total Não Pago: R$ ${formatCurrency(totalNao)}`;
+    }
 
-/* Edit (inline prompt simple) */
-async function editarVenda(id){
-  const v = vendas.find(x=>x.id===id);
-  if(!v) return;
-  const novoNome = prompt('Editar cliente:', v.cliente);
-  if(novoNome===null) return;
-  const novoValor = prompt('Editar valor (use ponto ou vírgula):', v.valor);
-  if(novoValor===null) return;
-  const novaData = prompt('Editar data (YYYY-MM-DD):', v.dataVenda);
-  if(novaData===null) return;
+    document.addEventListener('DOMContentLoaded', () => {
+      carregarVendas();
+    });
 
-  v.cliente = String(novoNome).trim();
-  v.valor = Number(String(novoValor).replace(',','.')) || 0;
-  v.dataVenda = novaData;
-  atualizarLista();
-  try {
-    await fetchWithTimeout(API_URL, {method:'POST', body: JSON.stringify(v)}, 10000);
-    showToast('Venda atualizada');
-  } catch(err){
-    console.error('Erro salvarEdicao',err);
-    showToast('Erro ao salvar edição', false);
-  }
-}
-
-/* ====== UI render ====== */
-function gerarBotoesMeses(){
-  const div = document.getElementById('mesesMenu'); div.innerHTML='';
-  const setMes = new Set(vendas.map(v=>{ try{const d=new Date(v.dataVenda); return `${d.getFullYear()}-${d.getMonth()+1}`}catch(e){return ''}}));
-  const meses = [...setMes].filter(Boolean).sort((a,b)=> new Date(a+'-01') - new Date(b+'-01'));
-  const nomes = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-  meses.forEach(m=>{
-    const [ano,mes]=m.split('-'); const btn=document.createElement('button');
-    btn.textContent = `${nomes[Number(mes)-1] || mes} ${ano}`; btn.style.border='none'; btn.style.padding='8px'; btn.style.borderRadius='8px'; btn.style.cursor='pointer';
-    btn.onclick = ()=> { setFiltro(null,m); };
-    div.appendChild(btn);
-  });
-}
-
-function setFiltro(status, mes){
-  filtroStatus = status;
-  filtroMes = mes || null;
-  gerarBotoesMeses();
-  atualizarLista();
-}
-
-function atualizarLista(){
-  const div = document.getElementById('listaVendas'); div.innerHTML='';
-  let lista = [...vendas];
-  if(filtroMes) lista = lista.filter(v=>{ const d=new Date(v.dataVenda); return `${d.getFullYear()}-${d.getMonth()+1}`===filtroMes; });
-  if(filtroStatus==='pago') lista = lista.filter(v=>v.pago);
-  if(filtroStatus==='nao') lista = lista.filter(v=>!v.pago);
-  lista.sort((a,b)=> a.cliente.localeCompare(b.cliente, 'pt-BR'));
-
-  let totalPagos=0, totalNao=0;
-  lista.forEach(v=>{
-    const card = document.createElement('div'); card.className='card';
-    const left = document.createElement('div'); left.className='card-left';
-    const right = document.createElement('div'); right.className='card-right';
-    left.innerHTML = `<div class="client">${v.cliente}</div><div class="meta">R$ ${formatCurrency(v.valor)} • ${formatDate(v.dataVenda)}</div>`;
-    const statusSpan = document.createElement('div'); statusSpan.className = 'status ' + (v.pago ? 'pago' : 'nao'); statusSpan.textContent = v.pago ? 'Pago' : 'Não Pago';
-    const actions = document.createElement('div'); actions.className='actions';
-    actions.innerHTML = `
-      <button class="icon-btn" title="Marcar/Desmarcar" onclick="togglePago('${v.id}')"><i class="fa-solid fa-check"></i></button>
-      <button class="icon-btn" title="Editar" onclick="editarVenda('${v.id}')"><i class="fa-solid fa-pen"></i></button>
-      <button class="icon-btn" title="Excluir" onclick="excluirVenda('${v.id}')"><i class="fa-solid fa-trash"></i></button>
-    `;
-    right.appendChild(statusSpan); right.appendChild(actions);
-    card.appendChild(left); card.appendChild(right);
-    div.appendChild(card);
-
-    if(v.pago) totalPagos += v.valor; else totalNao += v.valor;
-  });
-
-  document.getElementById('totais').textContent = `Total Pago: R$ ${formatCurrency(totalPagos)} | Total Não Pago: R$ ${formatCurrency(totalNao)}`;
-}
-
-/* ====== startup (safe) ====== */
-document.addEventListener('DOMContentLoaded', ()=>{ carregarVendas(); });
-</script>
+    function toggleMenuMobile() {
+      const content = document.getElementById('sidebar-content');
+      content.classList.toggle('open');
+    }
+  </script>
 </body>
 </html>
