@@ -174,7 +174,7 @@
 </main>
 
 <script>
-const API_URL = "COLE_SUA_URL_DO_SCRIPT_AQUI"; // Substitua pela URL do seu Apps Script
+const API_URL = "https://script.google.com/macros/s/AKfycbwbGpkzdk-uowBk1Mg3LKUnJZ8vk1yuj7HYZZk_tUUw6Vo8gpCQMx3g_TUzuNkvTyjM/exec";
 
 const sidebar = document.getElementById('sidebar');
 const hamburgerBtn = document.getElementById('hamburgerBtn');
@@ -185,7 +185,6 @@ document.addEventListener('click', e => { if(!sidebar.contains(e.target) && !ham
 
 dataVenda.value = new Date().toISOString().split('T')[0];
 
-// ==== Funções do Painel ====
 async function fetchAPI(params = {}, method = "GET") {
   const url = method === "GET" ? API_URL + "?" + new URLSearchParams(params) : API_URL;
   const options = method === "POST" ? { method: "POST", body: JSON.stringify(params) } : {};
@@ -241,7 +240,6 @@ function exibirVendas(vendas) {
   document.getElementById('totais').textContent = `Total Pago: R$ ${totalPago.toFixed(2)} | Total Não Pago: R$ ${totalNao.toFixed(2)}`;
 }
 
-// ==== Funções de API ====
 async function adicionarVenda() {
   const cliente = document.getElementById('cliente').value.trim();
   const valor = parseFloat(document.getElementById('valor').value);
@@ -265,22 +263,17 @@ async function excluirVenda(id) {
   carregarVendas();
 }
 
-// ==== Filtros ====
 function filtrar(pagoStatus) {
   carregarVendas().then(() => {
     const cards = document.querySelectorAll(".card");
     cards.forEach(card => {
       const statusBtn = card.querySelector(".status-btn");
-      if(statusBtn.textContent === "PAGO") {
-        card.style.display = pagoStatus ? "flex" : "none";
-      } else {
-        card.style.display = pagoStatus === false ? "flex" : "none";
-      }
+      if(statusBtn.textContent === "PAGO") card.style.display = pagoStatus ? "flex" : "none";
+      else card.style.display = pagoStatus === false ? "flex" : "none";
     });
   });
 }
 
-// Carrega vendas ao abrir
 carregarVendas();
 </script>
 </body>
