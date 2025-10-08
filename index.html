@@ -2,579 +2,381 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Painel de Vendas</title>
-
-  <!-- Fonte Poppins -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-
-  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --vinho: #8B0000;
-      --bg-menu: #000000;      /* sidebar sólido */
-      --bg-panel: #111111;     /* painel principal */
-      --card: #0d0d0d;
-      --text: #ffffff;
-      --muted: #bdbdbd;
-      --accent: #2f9cff;
-      --success: #00c77a;
-      --danger: #ff5c6c;
-      --radius: 12px;
-      --shadow: 0 10px 30px rgba(0,0,0,0.6);
-      --dur: 300ms;
-      --overlay: rgba(0,0,0,0.4);
-      --maxWidth: 1200px;
+    :root {
+      --primary: #8B0000;
+      --bg: #000;
+      --bg-panel: #111;
+      --text: #fff;
+      --card-radius: 12px;
     }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:var(--bg-panel);color:var(--text);font-family:'Poppins',system-ui,Arial; -webkit-font-smoothing:antialiased;}
-    a{color:inherit}
-    button{font-family:inherit}
 
-    /* App shell */
-    .app { max-width:var(--maxWidth); margin:18px auto; position:relative; padding:0 18px; }
-    .stage { display:grid; grid-template-columns:260px 1fr; gap:18px; align-items:start; }
-    @media (max-width:920px){ .stage { grid-template-columns:1fr; } }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Poppins", sans-serif;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
 
-    /* Overlay for mobile when sidebar open */
-    .overlay { position:fixed; inset:0; background:transparent; z-index:1100; pointer-events:none; transition: background var(--dur) ease; }
-    .overlay.visible { background:var(--overlay); pointer-events:auto; }
-
-    /* Sidebar */
-    .sidebar {
-      background: var(--bg-menu);
-      color:var(--text);
-      border-radius: var(--radius);
-      padding:18px;
-      box-shadow: var(--shadow);
-      height: calc(100vh - 36px);
+    /* ===== MENU LATERAL ===== */
+    #hamburgerBtn {
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 1.6rem;
       position: fixed;
-      left: 18px;
-      top: 18px;
-      width: 260px;
-      z-index: 1200;
-      transform: translateX(-320px); /* hidden by default */
-      transition: transform var(--dur) ease;
-      display:flex; flex-direction:column; gap:14px;
+      top: 16px;
+      left: 16px;
+      cursor: pointer;
+      z-index: 2000;
+      transition: transform 0.3s ease;
+    }
+    #hamburgerBtn:hover { transform: scale(1.1); }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 250px;
+      height: 100vh;
+      background: #000;
+      box-shadow: 3px 0 20px rgba(0,0,0,0.6);
+      transform: translateX(-260px);
+      transition: all 0.3s ease-in-out;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      z-index: 1500;
     }
     .sidebar.open { transform: translateX(0); }
-    @media (max-width:920px){
-      .sidebar { left:12px; width:70%; max-width:360px; }
-    }
 
-    .section-title { font-size:0.85rem; color:var(--muted); margin-top:6px; margin-bottom:6px; font-weight:600; }
-
-    .menu-list { display:flex; flex-direction:column; gap:8px; }
     .menu-item {
-      border-left:4px solid transparent;
-      background:transparent;
-      color:var(--text);
-      padding:10px;
-      border-radius:8px;
-      text-align:left;
-      font-weight:600;
-      cursor:pointer;
-      display:flex; align-items:center; gap:10px;
-      transition: all 220ms ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s ease;
     }
-    .menu-item:hover { background: rgba(255,255,255,0.08); border-left-color:var(--vinho); transform:translateX(3px); }
-    .menu-item.active { background: rgba(255,255,255,0.06); border-left-color:var(--vinho); }
-
-    .months { margin-top:6px; overflow:auto; padding-right:6px; display:flex; flex-direction:column; gap:6px; max-height:52vh; }
-    .months button { background:transparent; color:var(--text); border:none; padding:8px; border-radius:8px; text-align:left; cursor:pointer; font-weight:600; }
-    .months button:hover { background: rgba(255,255,255,0.04); }
-
-    .sidebar-footer { margin-top:auto; color:var(--muted); font-size:0.85rem; }
-
-    /* Header */
-    header.app-header {
-      position: fixed; left: 0; right: 0; top: 18px; display:flex; align-items:center; justify-content:center;
-      z-index:1150; pointer-events:none;
+    .menu-item:hover {
+      background: rgba(255,255,255,0.1);
+      border-left: 4px solid var(--primary);
+      padding-left: 10px;
     }
-    .header-inner {
-      width:100%; max-width:var(--maxWidth); padding:10px 18px; display:flex; align-items:center; gap:12px; justify-content:center;
-      background: transparent; pointer-events:auto;
+    .menu-divider {
+      height: 1px;
+      background: rgba(255,255,255,0.15);
+      margin: 8px 0;
     }
-    #hamburgerBtn { position:absolute; left:18px; background:var(--bg-menu); border-radius:10px; color:var(--text);
-      border:none;padding:10px; box-shadow: var(--shadow); cursor:pointer; transition: transform var(--dur); }
-    #hamburgerBtn:hover { transform:translateY(-3px); }
-    .title { font-size:1.25rem; font-weight:700; color:var(--text); text-align:center; }
+    .months {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 40vh;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+    .months button {
+      background: rgba(255,255,255,0.08);
+      border: none;
+      color: var(--text);
+      padding: 8px;
+      border-radius: 8px;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .months button.active { background: var(--primary); }
+    .months button:hover { background: rgba(255,255,255,0.18); }
 
-    /* Main container */
+    /* ===== PAINEL PRINCIPAL ===== */
     .main {
-      margin-top:86px;
-      margin-left: 0;
+      flex: 1;
+      background: var(--bg-panel);
+      padding: 80px 20px 30px 20px;
+      transition: margin-left 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    header.app-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: var(--bg);
+      color: var(--text);
       padding: 18px;
-      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.3rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      z-index: 1000;
     }
-    @media(min-width:921px) { .main { margin-left: 0; } } /* remaining full width while sidebar closed by default */
 
-    .top-controls { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
-    .left-controls { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    .search {
-      background:var(--card); border:1px solid rgba(255,255,255,0.02); padding:8px 10px; border-radius:10px; display:flex; gap:8px; align-items:center;
+    /* ===== FORM ===== */
+    .input-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
     }
-    .search input { background:transparent; border:none; outline:none; color:var(--text); width:220px; font-size:0.95rem; }
-    .sync-btn { background:transparent; border:1px solid rgba(255,255,255,0.03); color:var(--text); padding:8px 10px; border-radius:10px; cursor:pointer; }
-    .sync-btn:hover { box-shadow: 0 10px 30px rgba(47,153,255,0.06); transform:translateY(-3px); }
-
-    /* Form */
-    .form {
-      display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:12px; border-radius:12px; background:var(--card); box-shadow: var(--shadow);
+    input, button {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: none;
+      font-size: 0.95rem;
     }
-    .form input { background:transparent; border:1px solid rgba(255,255,255,0.03); padding:10px; border-radius:8px; color:var(--text); min-width:120px; }
-    .form .small { width:110px; }
-    .btn-primary { background:var(--vinho); color:var(--text); border:none; padding:9px 12px; border-radius:10px; cursor:pointer; font-weight:700; transition:all 200ms }
-    .btn-primary:hover { box-shadow: 0 10px 30px rgba(139,0,0,0.14); transform:translateY(-3px); }
+    input {
+      background: #222;
+      color: var(--text);
+    }
+    input::placeholder { color: #999; }
 
-    /* Counter row */
-    .meta-row { display:flex; justify-content:space-between; align-items:center; margin-top:10px; margin-bottom:8px; gap:10px; flex-wrap:wrap; }
-    .counter { color:var(--muted); font-weight:600; }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    .btn-primary:hover { filter: brightness(1.2); }
 
-    /* Cards grid */
-    .cards { display:grid; gap:12px; grid-template-columns:repeat(2,1fr); }
-    @media (max-width:920px) { .cards { grid-template-columns:1fr; } }
-
+    /* ===== LISTA ===== */
+    .list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+    }
     .card {
-      background: var(--card);
-      padding:14px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;
-      box-shadow: var(--shadow); transition: transform 200ms ease, box-shadow 200ms ease;
+      background: #1a1a1a;
+      border-radius: var(--card-radius);
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+      transition: transform 0.2s ease;
     }
-    .card:hover { transform:translateY(-4px); }
-    .card-left { display:flex; flex-direction:column; gap:6px; max-width:68%; }
-    .client { font-weight:700; font-size:1rem; }
-    .meta { color:var(--muted); font-size:0.88rem; }
+    .card:hover { transform: translateY(-3px); }
 
-    .card-right { display:flex; gap:10px; align-items:center; }
+    .card-left { display: flex; flex-direction: column; gap: 4px; }
+    .client { font-weight: 700; color: var(--text); }
+    .meta { font-size: 0.85rem; color: #aaa; }
 
+    .card-right {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: flex-end;
+    }
+
+    .actions { display: flex; gap: 8px; }
     .icon-btn {
-      width:44px;height:44px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--text);cursor:pointer;transition:all 180ms;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 8px;
+      transition: all 0.3s;
     }
-    .icon-btn.paid { color:var(--success); box-shadow: 0 8px 26px rgba(0,199,136,0.06); }
-    .icon-btn.del { color:var(--danger); }
-    .icon-btn:hover { transform:translateY(-4px) scale(1.03); }
+    .icon-btn:hover { background: rgba(255,255,255,0.1); }
+    .status.pago { color: #00b894; }
+    .status.nao { color: #d63031; }
 
     .totals {
-      margin-top:14px; padding:12px; border-radius:12px; background:var(--bg-menu); color:var(--text); font-weight:700; box-shadow: var(--shadow);
+      margin-top: 10px;
+      text-align: center;
+      font-weight: 700;
     }
 
-    /* toast */
-    .toast-wrap { position:fixed; right:18px; bottom:18px; z-index:1400; display:flex; flex-direction:column; gap:8px; }
-    .toast { background:#111; color:var(--text); padding:10px 12px; border-radius:10px; box-shadow: 0 8px 26px rgba(0,0,0,0.6); }
+    /* ===== TOASTS ===== */
+    .toast-wrap {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 9999;
+    }
+    .toast {
+      background: #111;
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 10px;
+      opacity: 0.95;
+    }
 
-    /* focus */
-    input:focus, button:focus { outline: 2px solid rgba(139,0,0,0.12); outline-offset:2px; border-radius:8px; }
+    @media (max-width: 900px) {
+      .main { padding: 90px 16px; }
+    }
   </style>
 </head>
 <body>
-  <div class="overlay" id="overlay"></div>
 
-  <div class="app">
-    <div class="stage">
-      <!-- Sidebar (recolhida por padrão) -->
-      <aside class="sidebar" id="sidebar" aria-label="Menu lateral" role="navigation" aria-hidden="true">
-        <div class="section-title">Menu</div>
-        <div class="menu-list" role="menu">
-          <button class="menu-item active" data-action="dashboard"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Painel</button>
-          <button class="menu-item" id="syncMenuBtn"><i class="fa-solid fa-sync-alt" aria-hidden="true"></i> Sincronizar</button>
-          <button class="menu-item" data-action="filters"><i class="fa-solid fa-filter" aria-hidden="true"></i> Filtros</button>
-        </div>
+  <button id="hamburgerBtn"><i class="fa-solid fa-bars"></i></button>
 
-        <div class="section-title">Meses</div>
-        <div class="months" id="mesesMenu" aria-label="Meses"></div>
-
-        <div class="sidebar-footer" style="margin-top:auto">© Painel</div>
-      </aside>
-
-      <!-- Header fixed -->
-      <header class="app-header">
-        <div class="header-inner" role="banner">
-          <button id="hamburgerBtn" aria-label="Abrir menu"><i class="fa-solid fa-bars"></i></button>
-          <div class="title">Painel de Vendas</div>
-        </div>
-      </header>
-
-      <!-- Main -->
-      <main class="main" id="main" role="main">
-        <div class="top-controls">
-          <div class="left-controls">
-            <div class="search" role="search">
-              <i class="fa-solid fa-magnifying-glass" style="color:var(--muted)"></i>
-              <input id="searchInput" placeholder="Buscar por cliente..." aria-label="Buscar por cliente" />
-            </div>
-            <button id="syncBtn" class="sync-btn" title="Sincronizar agora">🔄 Sincronizar</button>
-          </div>
-
-          <div style="display:flex;gap:10px;align-items:center">
-            <div style="color:var(--muted);font-weight:600" id="filtroInfo">Filtrando: Todas</div>
-          </div>
-        </div>
-
-        <!-- form -->
-        <div class="form" role="form" aria-label="Adicionar venda">
-          <input id="cliente" type="text" placeholder="Nome do cliente" aria-label="Nome do cliente" />
-          <input id="valorUnit" type="number" placeholder="Valor unitário (R$)" min="0" step="0.01" aria-label="Valor unitário" />
-          <input id="quantidade" class="small" type="number" placeholder="Qtd" min="1" value="1" aria-label="Quantidade" />
-          <input id="valorTotal" type="number" placeholder="Total (R$)" min="0" step="0.01" aria-label="Valor total" />
-          <input id="dataVenda" type="date" aria-label="Data da venda" />
-          <button class="btn-primary" id="addBtn" aria-label="Adicionar venda"><i class="fa-solid fa-plus"></i>&nbsp;&nbsp;Adicionar</button>
-        </div>
-
-        <div class="meta-row">
-          <div class="counter" id="contador">0 vendas exibidas</div>
-          <div class="muted" id="lastSync">Última sincronização: —</div>
-        </div>
-
-        <!-- cards -->
-        <section>
-          <div id="cards" class="cards" aria-live="polite"></div>
-        </section>
-
-        <div class="totals" id="totais">Total Pago: R$ 0,00 | Total Não Pago: R$ 0,00</div>
-      </main>
+  <aside class="sidebar" id="sidebar">
+    <div class="menu-item" onclick="setFiltro(null, null)">
+      <i class="fa-solid fa-list"></i> Todas
     </div>
-  </div>
+    <div class="menu-item" onclick="setFiltro('pago', null)">
+      <i class="fa-solid fa-circle-check"></i> Pagas
+    </div>
+    <div class="menu-item" onclick="setFiltro('nao', null)">
+      <i class="fa-solid fa-clock"></i> Não Pagas
+    </div>
 
-  <div class="toast-wrap" id="toasts" aria-live="polite"></div>
+    <div class="menu-divider"></div>
+    <div style="font-weight:600;">Meses</div>
+    <div class="months" id="mesesMenu"></div>
+  </aside>
+
+  <main class="main">
+    <header class="app-header">Painel de Vendas</header>
+
+    <section class="form">
+      <div class="input-row">
+        <input id="cliente" placeholder="Nome do cliente" autocomplete="off">
+        <input id="valor" type="number" placeholder="Valor (R$)" min="0" step="0.01">
+        <input id="quantidade" type="number" placeholder="Qtd" min="1" value="1">
+        <input id="dataVenda" type="date">
+        <button class="btn-primary" id="addBtn"><i class="fa-solid fa-plus"></i>&nbsp;Adicionar</button>
+      </div>
+    </section>
+
+    <div class="list" id="listaVendas"></div>
+    <div class="totals" id="totais">Total Pago: R$ 0,00 | Total Não Pago: R$ 0,00</div>
+  </main>
+
+  <div class="toast-wrap" id="toasts"></div>
 
   <script>
-    /* ================= CONFIG ================= */
-    const API_URL = "https://script.google.com/macros/s/AKfycbxrHqYUC0ExjoLAunNbqaRyvttAJi9qH2HdaLT4EHNvkLfxc9z_Am9oPxbJObr4MRI0/exec";
-    const nomesMes = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  const API_URL = "https://script.google.com/macros/s/AKfycbxrHqYUC0ExjoLAunNbqaRyvttAJi9qH2HdaLT4EHNvkLfxc9z_Am9oPxbJObr4MRI0/exec";
 
-    /* ================ STATE ================ */
-    let vendas = []; // {id, cliente, valorUnit, quantidade, valorTotal, dataVenda (YYYY-MM-DD), pago}
-    let filtroMes = null;
-    let filtroStatus = null;
-    let ultimaUnitDetectada = null;
+  const sidebar = document.getElementById('sidebar');
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  hamburgerBtn.addEventListener('click', () => sidebar.classList.toggle('open'));
 
-    /* ================ ELEMENTS ================ */
-    const sidebar = document.getElementById('sidebar');
-    const hamburgerBtn = document.getElementById('hamburgerBtn');
-    const overlay = document.getElementById('overlay');
-    const cardsEl = document.getElementById('cards');
-    const searchInput = document.getElementById('searchInput');
-    const mesesMenu = document.getElementById('mesesMenu');
-    const contadorEl = document.getElementById('contador');
-    const filtroInfoEl = document.getElementById('filtroInfo');
-    const lastSyncEl = document.getElementById('lastSync');
-    const totaisEl = document.getElementById('totais');
-    const toasts = document.getElementById('toasts');
+  const lista = document.getElementById('listaVendas');
+  const totais = document.getElementById('totais');
 
-    // form
-    const clienteEl = document.getElementById('cliente');
-    const valorUnitEl = document.getElementById('valorUnit');
-    const qtdEl = document.getElementById('quantidade');
-    const valorTotalEl = document.getElementById('valorTotal');
-    const dataEl = document.getElementById('dataVenda');
-    const addBtn = document.getElementById('addBtn');
-    const syncBtn = document.getElementById('syncBtn');
-    const syncMenuBtn = document.getElementById('syncMenuBtn');
-
-    /* ================ HELPERS ================ */
-    const hojeISO = () => new Date().toISOString().split('T')[0];
-    const formatBRL = (v) => Number(v||0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
-
-    function toast(msg, short=true){
-      const t = document.createElement('div');
-      t.className = 'toast';
-      t.textContent = msg;
-      toasts.appendChild(t);
-      setTimeout(()=> t.style.opacity = '0', short?1800:3600);
-      setTimeout(()=> t.remove(), short?2200:4000);
+  async function fetchWithTimeout(resource, options = {}, timeout = 10000) {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    try {
+      const response = await fetch(resource, { ...options, signal: controller.signal });
+      clearTimeout(id);
+      if (!response.ok) throw new Error("Erro na resposta do servidor: " + response.status);
+      return response;
+    } catch (error) {
+      clearTimeout(id);
+      console.error("Erro ao conectar com o servidor:", error);
+      alert("Erro ao conectar com o servidor. Verifique sua internet ou o link da planilha.");
+      throw error;
     }
+  }
 
-    /* ================ SIDEBAR / OVERLAY ================ */
-    function openSidebar(){ sidebar.classList.add('open'); overlay.classList.add('visible'); sidebar.setAttribute('aria-hidden','false'); }
-    function closeSidebar(){ sidebar.classList.remove('open'); overlay.classList.remove('visible'); sidebar.setAttribute('aria-hidden','true'); }
-    hamburgerBtn.addEventListener('click', () => { if (sidebar.classList.contains('open')) closeSidebar(); else openSidebar(); });
-    overlay.addEventListener('click', closeSidebar);
-    window.addEventListener('resize', () => { if (window.innerWidth > 920) closeSidebar(); });
+  function showToast(msg) {
+    const box = document.createElement("div");
+    box.className = "toast";
+    box.textContent = msg;
+    document.getElementById("toasts").appendChild(box);
+    setTimeout(() => box.remove(), 3000);
+  }
 
-    /* ================ FORM: unit/qty/total logic ================ */
-    dataEl.value = hojeISO();
+  async function carregarVendas() {
+    const res = await fetchWithTimeout(API_URL + "?action=get");
+    const data = await res.json();
+    exibirVendas(data);
+  }
 
-    valorUnitEl.addEventListener('input', () => {
-      const v = parseFloat(valorUnitEl.value);
-      if (!isNaN(v)) ultimaUnitDetectada = v;
-      recalcularTotalAuto();
+  function exibirVendas(vendas) {
+    lista.innerHTML = "";
+    vendas.sort((a,b)=>a.nome.localeCompare(b.nome));
+    let totalPago = 0, totalNao = 0;
+    vendas.forEach(v => {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const left = document.createElement("div");
+      left.className = "card-left";
+      left.innerHTML = `<div class="client">${v.nome}</div>
+                        <div class="meta">Valor: R$ ${v.valor}</div>
+                        <div class="meta">Qtd: ${v.quantidade} | Total: R$ ${v.total}</div>
+                        <div class="meta">${v.data}</div>`;
+
+      const right = document.createElement("div");
+      right.className = "card-right";
+      const actions = document.createElement("div");
+      actions.className = "actions";
+
+      const pagoBtn = document.createElement("button");
+      pagoBtn.className = "icon-btn";
+      pagoBtn.innerHTML = `<i class="fa-solid fa-circle-check ${v.pago === 'TRUE' ? 'status pago' : 'status nao'}"></i>`;
+      pagoBtn.onclick = () => togglePago(v.id, v.pago);
+
+      const delBtn = document.createElement("button");
+      delBtn.className = "icon-btn";
+      delBtn.innerHTML = `<i class="fa-solid fa-trash"></i>`;
+      delBtn.onclick = () => excluirVenda(v.id);
+
+      actions.appendChild(pagoBtn);
+      actions.appendChild(delBtn);
+      right.appendChild(actions);
+      card.appendChild(left);
+      card.appendChild(right);
+      lista.appendChild(card);
+
+      if (v.pago === 'TRUE') totalPago += parseFloat(v.total);
+      else totalNao += parseFloat(v.total);
     });
-    qtdEl.addEventListener('input', () => recalcularTotalAuto());
+    totais.textContent = `Total Pago: R$ ${totalPago.toFixed(2)} | Total Não Pago: R$ ${totalNao.toFixed(2)}`;
+  }
 
-    function recalcularTotalAuto(){
-      const unit = Number(valorUnitEl.value);
-      const q = Number(qtdEl.value) || 1;
-      const base = (!isNaN(unit) && unit >= 0) ? unit : (ultimaUnitDetectada || 0);
-      if (base) {
-        const total = base * q;
-        valorTotalEl.value = total ? total.toFixed(2) : '';
-      }
-    }
-    valorTotalEl.addEventListener('input', () => { /* manual edit allowed */ });
+  async function excluirVenda(id) {
+    if (!confirm("Deseja realmente excluir esta venda?")) return;
+    await fetchWithTimeout(API_URL + `?action=delete&id=${id}`, { method: "POST" });
+    showToast("Venda excluída!");
+    carregarVendas();
+  }
 
-    /* ================ FETCH UTIL (timeout) ================ */
-    async function fetchWithTimeout(url, opts={}, timeout=12000){
-      const controller = new AbortController();
-      const id = setTimeout(()=> controller.abort(), timeout);
-      try {
-        const res = await fetch(url, {...opts, signal: controller.signal});
-        clearTimeout(id);
-        return res;
-      } catch (err) {
-        clearTimeout(id);
-        throw err;
-      }
-    }
+  async function togglePago(id, pagoAtual) {
+    const novoStatus = pagoAtual === 'TRUE' ? 'FALSE' : 'TRUE';
+    await fetchWithTimeout(API_URL + `?action=updateStatus&id=${id}&pago=${novoStatus}`, { method: "POST" });
+    showToast("Status atualizado!");
+    carregarVendas();
+  }
 
-    /* ================ LOAD / SYNC ================ */
-    async function carregarVendas(){
-      syncBtn.disabled = true;
-      syncBtn.textContent = '🔄 Sincronizando...';
-      try {
-        const res = await fetchWithTimeout(API_URL + '?acao=listar', { cache: 'no-store' }, 12000);
-        const data = await res.json();
-        vendas = (Array.isArray(data) ? data : []).map(r => {
-          const valorTotal = Number(r.valor || r.Valor || r.total || r.value || 0);
-          const quantidade = Number(r.quantidade || r.qtd || r.qty || 1) || 1;
-          const valorUnit = quantidade > 0 ? (valorTotal / quantidade) : valorTotal;
-          return {
-            id: String(r.id || r.ID || r.Id || r.rowId || (Date.now() + Math.random())),
-            cliente: String(r.cliente || r.Cliente || r.nome || r.name || ''),
-            valorUnit: Number(valorUnit || 0),
-            quantidade: Number(quantidade || 1),
-            valorTotal: Number(valorTotal || (valorUnit * quantidade)),
-            dataVenda: String(r.dataVenda || r.DataVenda || r.date || r.data || hojeISO()),
-            pago: (r.pago === true || r.pago === 'true' || r.pago === '1' || r.pago === 1)
-          };
-        });
-        ordenarVendas();
-        gerarBotoesMeses();
-        atualizarLista();
-        lastSyncEl.textContent = `Última sincronização: ${new Date().toLocaleString()}`;
-        toast('Sincronização concluída', true);
-      } catch (err) {
-        console.error('carregarVendas', err);
-        toast('Erro ao sincronizar. Verifique conexão.', false);
-      } finally {
-        syncBtn.disabled = false;
-        syncBtn.textContent = '🔄 Sincronizar';
-      }
-    }
-    syncBtn.addEventListener('click', carregarVendas);
-    if (syncMenuBtn) syncMenuBtn.addEventListener('click', carregarVendas);
+  document.getElementById("addBtn").onclick = async () => {
+    const nome = document.getElementById("cliente").value.trim();
+    const valor = parseFloat(document.getElementById("valor").value);
+    const qtd = parseInt(document.getElementById("quantidade").value) || 1;
+    const data = document.getElementById("dataVenda").value || new Date().toISOString().split("T")[0];
+    if (!nome || isNaN(valor)) return alert("Preencha os campos corretamente!");
 
-    /* ================ MESES / FILTROS / ORDENAÇÃO ================ */
-    function ordenarVendas(){ vendas.sort((a,b) => (a.cliente || '').localeCompare(b.cliente || '', 'pt-BR', { sensitivity:'base' })); }
+    const total = valor * qtd;
+    await fetchWithTimeout(API_URL + `?action=add&nome=${nome}&valor=${valor}&quantidade=${qtd}&total=${total}&data=${data}`, { method: "POST" });
+    showToast("Venda adicionada!");
+    carregarVendas();
+  };
 
-    function gerarBotoesMeses(){
-      mesesMenu.innerHTML = '';
-      const btnAll = document.createElement('button'); btnAll.textContent = 'Todos os Meses';
-      if (filtroMes === null) btnAll.classList.add('active');
-      btnAll.onclick = () => setFiltro(null,null);
-      mesesMenu.appendChild(btnAll);
-
-      const setMes = new Set();
-      vendas.forEach(v => {
-        if (!v.dataVenda) return;
-        const d = new Date(v.dataVenda);
-        if (isNaN(d)) return;
-        const ano = d.getFullYear();
-        const mes = String(d.getMonth()+1).padStart(2,'0');
-        setMes.add(`${ano}-${mes}`);
-      });
-
-      Array.from(setMes).sort((a,b)=> b.localeCompare(a)).forEach(mstr => {
-        const [y,m] = mstr.split('-');
-        const b = document.createElement('button');
-        b.textContent = `${nomesMes[Number(m)-1]} ${y}`;
-        if (filtroMes === mstr) b.classList.add('active');
-        b.onclick = () => setFiltro(filtroStatus, mstr);
-        mesesMenu.appendChild(b);
-      });
-    }
-
-    function setFiltro(status, mes){
-      filtroStatus = status;
-      filtroMes = mes;
-      gerarBotoesMeses();
-      atualizarLista();
-    }
-
-    /* ================ ADICIONAR VENDA ================ */
-    addBtn.addEventListener('click', async () => {
-      const cliente = (clienteEl.value || '').trim();
-      const unit = Number(valorUnitEl.value) || 0;
-      const quantidade = Number(qtdEl.value) || 1;
-      const total = Number(valorTotalEl.value) || (unit * quantidade);
-      const dataVenda = dataEl.value || hojeISO();
-
-      if (!cliente || isNaN(total) || total <= 0 || !dataVenda) {
-        toast('Preencha cliente, total e data corretamente.', false);
-        return;
-      }
-
-      const payload = { acao:'adicionar', cliente, valor: total, quantidade, dataVenda, pago:false };
-
-      try {
-        addBtn.disabled = true;
-        const res = await fetchWithTimeout(API_URL, {
-          method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload)
-        }, 12000);
-        const json = await res.json();
-        const newId = String(json.id || json.ID || json.newId || json.rowId || (Date.now()+Math.random()));
-
-        const item = {
-          id: newId,
-          cliente,
-          valorUnit: unit || (total / quantidade),
-          quantidade,
-          valorTotal: Number(total),
-          dataVenda,
-          pago:false
-        };
-        vendas.push(item);
-        ordenarVendas();
-        gerarBotoesMeses();
-        atualizarLista();
-        // clear form
-        clienteEl.value = '';
-        valorUnitEl.value = '';
-        qtdEl.value = '1';
-        valorTotalEl.value = '';
-        dataEl.value = hojeISO();
-        ultimaUnitDetectada = null;
-        toast('Venda adicionada', true);
-      } catch (err) {
-        console.error('adicionar', err);
-        toast('Erro ao adicionar venda', false);
-      } finally { addBtn.disabled = false; }
-    });
-
-    /* ================ TOGGLE PAGO ================ */
-    async function togglePago(id, btnEl){
-      const idx = vendas.findIndex(x => x.id === id);
-      if (idx === -1) return;
-      const item = vendas[idx];
-      const prev = item.pago;
-      item.pago = !item.pago;
-
-      // small visual feedback
-      const card = btnEl.closest('.card');
-      if (card) card.animate([{transform:'scale(1)'},{transform:'scale(.98)'},{transform:'scale(1)'}], {duration:200, easing:'ease-out'});
-
-      atualizarLista();
-      try {
-        const payload = { acao:'atualizar', id: item.id, pago: item.pago };
-        await fetchWithTimeout(API_URL, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) }, 10000);
-        toast('Status atualizado', true);
-      } catch (err) {
-        console.error('togglePago', err);
-        item.pago = prev;
-        atualizarLista();
-        toast('Erro ao atualizar status', false);
-      }
-    }
-
-    /* ================ EXCLUIR ================ */
-    async function excluirVenda(id, btnEl){
-      if (!confirm('Confirmar exclusão?')) return;
-      const idx = vendas.findIndex(x => x.id === id);
-      if (idx === -1) return;
-      const card = btnEl.closest('.card');
-      if (card) card.classList.add('fade-out');
-      setTimeout(()=> {
-        vendas.splice(idx,1);
-        gerarBotoesMeses();
-        atualizarLista();
-        toast('Venda excluída', true);
-      }, 180);
-
-      try {
-        const payload = { acao:'excluir', id };
-        await fetchWithTimeout(API_URL, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) }, 10000);
-      } catch (err) {
-        console.error('excluir', err);
-        toast('Erro ao excluir no servidor', false);
-      }
-    }
-
-    /* ================ ATUALIZAR LISTA / RENDER ================ */
-    function atualizarLista(){
-      cardsEl.innerHTML = '';
-      const q = (searchInput.value || '').trim().toLowerCase();
-
-      let filtradas = vendas.filter(v => {
-        if (q && !(v.cliente || '').toLowerCase().includes(q)) return false;
-        if (filtroStatus === 'pago' && !v.pago) return false;
-        if (filtroStatus === 'nao' && v.pago) return false;
-        if (filtroMes){
-          const d = new Date(v.dataVenda);
-          const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-          if (key !== filtroMes) return false;
-        }
-        return true;
-      });
-
-      filtradas.sort((a,b)=> (a.cliente||'').localeCompare(b.cliente||'', 'pt-BR', {sensitivity:'base'}));
-
-      let totalPago = 0, totalNao = 0;
-      if (filtradas.length === 0){
-        const empty = document.createElement('div'); empty.className = 'card'; empty.innerHTML = `<div class="client" style="color:var(--muted)">Nenhuma venda encontrada.</div>`;
-        cardsEl.appendChild(empty);
-      } else {
-        filtradas.forEach(v => {
-          const card = document.createElement('article'); card.className = 'card';
-
-          const left = document.createElement('div'); left.className = 'card-left';
-          const client = document.createElement('div'); client.className = 'client'; client.textContent = v.cliente || '(sem nome)';
-          const meta = document.createElement('div'); meta.className = 'meta';
-          meta.innerHTML = `${v.quantidade}x • ${new Date(v.dataVenda).toLocaleDateString('pt-BR')} • <span style="color:var(--muted)">${formatBRL(v.valorTotal)}</span>`;
-          left.appendChild(client); left.appendChild(meta);
-
-          const right = document.createElement('div'); right.className = 'card-right';
-          const paidBtn = document.createElement('button'); paidBtn.className = 'icon-btn' + (v.pago ? ' paid' : '');
-          paidBtn.setAttribute('aria-label', v.pago ? 'Marcar como não pago' : 'Marcar como pago');
-          paidBtn.innerHTML = `<i class="fa-solid fa-check-circle"></i>`;
-          paidBtn.onclick = (ev) => togglePago(v.id, ev.currentTarget);
-
-          const delBtn = document.createElement('button'); delBtn.className = 'icon-btn del';
-          delBtn.setAttribute('aria-label','Excluir venda');
-          delBtn.innerHTML = `<i class="fa-solid fa-trash"></i>`;
-          delBtn.onclick = (ev) => excluirVenda(v.id, ev.currentTarget);
-
-          right.appendChild(paidBtn); right.appendChild(delBtn);
-
-          card.appendChild(left); card.appendChild(right);
-          cardsEl.appendChild(card);
-
-          if (v.pago) totalPago += Number(v.valorTotal||0); else totalNao += Number(v.valorTotal||0);
-        });
-      }
-
-      totaisEl.textContent = `Total Pago: ${formatBRL(totalPago)} | Total Não Pago: ${formatBRL(totalNao)}`;
-      contadorEl.textContent = `${filtradas.length} venda${filtradas.length === 1 ? '' : 's'} exibida${filtradas.length === 1 ? '' : 's'}`;
-      filtroInfoEl.textContent = filtroStatus ? (filtroStatus === 'pago' ? 'Filtrando: Pagas' : 'Filtrando: Não Pagas') : 'Filtrando: Todas';
-    }
-
-    /* ================ INIT ================ */
-    (function init(){
-      // default: sidebar closed
-      sidebar.classList.remove('open');
-      overlay.classList.remove('visible');
-      sidebar.setAttribute('aria-hidden','true');
-
-      // listeners
-      searchInput.addEventListener('input', atualizarLista);
-      valorUnitEl.addEventListener('input', () => { ultimaUnitDetectada = parseFloat(valorUnitEl.value) || ultimaUnitDetectada; recalcularTotalAuto(); });
-      qtdEl.addEventListener('input', recalcularTotalAuto);
-      valorTotalEl.addEventListener('input', ()=>{});
-      dataEl.value = hojeISO();
-
-      // load data
-      carregarVendas();
-    })();
+  carregarVendas();
   </script>
 </body>
 </html>
