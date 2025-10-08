@@ -1,383 +1,287 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Painel de Vendas</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --primary: #8B0000;
-      --bg: #000;
-      --bg-panel: #111;
-      --text: #fff;
-      --card-radius: 12px;
-    }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel de Vendas</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #000;
+    --panel: #111;
+    --text: #fff;
+    --green: #00b894;
+    --red: #d63031;
+  }
 
-    * { box-sizing: border-box; }
-    body {
-      font-family: "Poppins", sans-serif;
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      display: flex;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
+  * { box-sizing: border-box; font-family: "Poppins", sans-serif; }
 
-    /* ===== MENU LATERAL ===== */
-    #hamburgerBtn {
-      background: none;
-      border: none;
-      color: var(--text);
-      font-size: 1.6rem;
-      position: fixed;
-      top: 16px;
-      left: 16px;
-      cursor: pointer;
-      z-index: 2000;
-      transition: transform 0.3s ease;
-    }
-    #hamburgerBtn:hover { transform: scale(1.1); }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+  }
 
-    .sidebar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 250px;
-      height: 100vh;
-      background: #000;
-      box-shadow: 3px 0 20px rgba(0,0,0,0.6);
-      transform: translateX(-260px);
-      transition: all 0.3s ease-in-out;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-      z-index: 1500;
-    }
-    .sidebar.open { transform: translateX(0); }
+  header {
+    background: #000;
+    color: white;
+    text-align: center;
+    padding: 18px;
+    font-size: 1.4rem;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    border-bottom-left-radius: 25px;
+    border-bottom-right-radius: 25px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  }
 
-    .menu-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      border-radius: 8px;
-      color: #fff;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    .menu-item:hover {
-      background: rgba(255,255,255,0.1);
-      border-left: 4px solid var(--primary);
-      padding-left: 10px;
-    }
-    .menu-divider {
-      height: 1px;
-      background: rgba(255,255,255,0.15);
-      margin: 8px 0;
-    }
-    .months {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      max-height: 40vh;
-      overflow-y: auto;
-      padding-right: 6px;
-    }
-    .months button {
-      background: rgba(255,255,255,0.08);
-      border: none;
-      color: var(--text);
-      padding: 8px;
-      border-radius: 8px;
-      text-align: left;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    .months button.active { background: var(--primary); }
-    .months button:hover { background: rgba(255,255,255,0.18); }
+  #hamburgerBtn {
+    position: fixed;
+    top: 18px;
+    left: 18px;
+    font-size: 1.8rem;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    z-index: 1100;
+  }
 
-    /* ===== PAINEL PRINCIPAL ===== */
-    .main {
-      flex: 1;
-      background: var(--bg-panel);
-      padding: 80px 20px 30px 20px;
-      transition: margin-left 0.3s ease;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
+  #sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100%;
+    background: #000;
+    transform: translateX(-270px);
+    transition: all 0.3s ease;
+    padding: 20px;
+    border-top-right-radius: 25px;
+    border-bottom-right-radius: 25px;
+    box-shadow: 3px 0 10px rgba(0,0,0,0.6);
+    z-index: 1001;
+  }
+  #sidebar.open { transform: translateX(0); }
 
-    header.app-header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      background: var(--bg);
-      color: var(--text);
-      padding: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 1.3rem;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-      z-index: 1000;
-    }
+  .menu-item {
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.05);
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .menu-item:hover { background: #222; }
 
-    /* ===== FORM ===== */
-    .input-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    input, button {
-      padding: 10px 12px;
-      border-radius: 10px;
-      border: none;
-      font-size: 0.95rem;
-    }
-    input {
-      background: #222;
-      color: var(--text);
-    }
-    input::placeholder { color: #999; }
+  main {
+    margin-top: 100px;
+    padding: 16px;
+  }
 
-    .btn-primary {
-      background: var(--primary);
-      color: #fff;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.3s;
-    }
-    .btn-primary:hover { filter: brightness(1.2); }
+  .form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  input, button {
+    padding: 14px;
+    border-radius: 20px;
+    border: none;
+    font-size: 1rem;
+    outline: none;
+  }
+  input { background: #222; color: white; }
+  input::placeholder { color: #aaa; }
 
-    /* ===== LISTA ===== */
-    .list {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 14px;
-    }
-    .card {
-      background: #1a1a1a;
-      border-radius: var(--card-radius);
-      padding: 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.4);
-      transition: transform 0.2s ease;
-    }
-    .card:hover { transform: translateY(-3px); }
+  button {
+    background: #000;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  button:hover { background: #222; }
 
-    .card-left { display: flex; flex-direction: column; gap: 4px; }
-    .client { font-weight: 700; color: var(--text); }
-    .meta { font-size: 0.85rem; color: #aaa; }
+  .card {
+    background: var(--panel);
+    border-radius: 20px;
+    padding: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
 
-    .card-right {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      align-items: flex-end;
-    }
+  .info { font-size: 0.9rem; flex: 1 1 180px; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 
-    .actions { display: flex; gap: 8px; }
-    .icon-btn {
-      border: none;
-      background: transparent;
-      color: var(--text);
-      cursor: pointer;
-      padding: 6px;
-      border-radius: 8px;
-      transition: all 0.3s;
-    }
-    .icon-btn:hover { background: rgba(255,255,255,0.1); }
-    .status.pago { color: #00b894; }
-    .status.nao { color: #d63031; }
+  .status-btn, .delete-btn {
+    border-radius: 18px;
+    padding: 10px 16px;
+    font-weight: 600;
+    border: 1px solid #333;
+    background: #000;
+    cursor: pointer;
+    flex: 1 1 100px;
+    text-align: center;
+  }
+  .status-btn.pago { color: var(--green); }
+  .status-btn.nao { color: var(--red); }
+  .status-btn:hover, .delete-btn:hover { background: #111; }
 
-    .totals {
-      margin-top: 10px;
-      text-align: center;
-      font-weight: 700;
-    }
+  .totals {
+    text-align: center;
+    font-weight: 600;
+    margin-top: 15px;
+    background: #1a1a1a;
+    border-radius: 20px;
+    padding: 14px;
+  }
 
-    /* ===== TOASTS ===== */
-    .toast-wrap {
-      position: fixed;
-      right: 18px;
-      bottom: 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      z-index: 9999;
-    }
-    .toast {
-      background: #111;
-      color: #fff;
-      padding: 10px 14px;
-      border-radius: 10px;
-      opacity: 0.95;
-    }
-
-    @media (max-width: 900px) {
-      .main { padding: 90px 16px; }
-    }
-  </style>
+  @media (max-width: 480px) {
+    .form { grid-template-columns: 1fr; }
+    .actions { flex-direction: column; }
+  }
+</style>
 </head>
 <body>
+<header>Painel de Vendas</header>
+<button id="hamburgerBtn">&#9776;</button>
 
-  <button id="hamburgerBtn"><i class="fa-solid fa-bars"></i></button>
+<aside id="sidebar">
+  <div class="menu-item" onclick="carregarVendas()">Todas</div>
+  <div class="menu-item" onclick="filtrar(true)">Pagas</div>
+  <div class="menu-item" onclick="filtrar(false)">Não Pagas</div>
+</aside>
 
-  <aside class="sidebar" id="sidebar">
-    <div class="menu-item" onclick="setFiltro(null, null)">
-      <i class="fa-solid fa-list"></i> Todas
-    </div>
-    <div class="menu-item" onclick="setFiltro('pago', null)">
-      <i class="fa-solid fa-circle-check"></i> Pagas
-    </div>
-    <div class="menu-item" onclick="setFiltro('nao', null)">
-      <i class="fa-solid fa-clock"></i> Não Pagas
-    </div>
+<main>
+  <section class="form">
+    <input id="cliente" placeholder="Nome do cliente">
+    <input id="valor" type="number" step="0.01" placeholder="Valor (R$)">
+    <input id="quantidade" type="number" min="1" value="1" placeholder="Qtd">
+    <input id="dataVenda" type="date">
+    <button onclick="adicionarVenda()">Adicionar</button>
+  </section>
 
-    <div class="menu-divider"></div>
-    <div style="font-weight:600;">Meses</div>
-    <div class="months" id="mesesMenu"></div>
-  </aside>
+  <div id="listaVendas"></div>
+  <div class="totals" id="totais">Total Pago: R$ 0,00 | Total Não Pago: R$ 0,00</div>
+</main>
 
-  <main class="main">
-    <header class="app-header">Painel de Vendas</header>
+<script>
+const API_URL = "COLE_SUA_URL_DO_SCRIPT_AQUI"; // Substitua pela URL do seu Apps Script
 
-    <section class="form">
-      <div class="input-row">
-        <input id="cliente" placeholder="Nome do cliente" autocomplete="off">
-        <input id="valor" type="number" placeholder="Valor (R$)" min="0" step="0.01">
-        <input id="quantidade" type="number" placeholder="Qtd" min="1" value="1">
-        <input id="dataVenda" type="date">
-        <button class="btn-primary" id="addBtn"><i class="fa-solid fa-plus"></i>&nbsp;Adicionar</button>
-      </div>
-    </section>
+const sidebar = document.getElementById('sidebar');
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+const dataVenda = document.getElementById('dataVenda');
 
-    <div class="list" id="listaVendas"></div>
-    <div class="totals" id="totais">Total Pago: R$ 0,00 | Total Não Pago: R$ 0,00</div>
-  </main>
+hamburgerBtn.addEventListener('click', e => { e.stopPropagation(); sidebar.classList.toggle('open'); });
+document.addEventListener('click', e => { if(!sidebar.contains(e.target) && !hamburgerBtn.contains(e.target)) sidebar.classList.remove('open'); });
 
-  <div class="toast-wrap" id="toasts"></div>
+dataVenda.value = new Date().toISOString().split('T')[0];
 
-  <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbyBB9sJ53z5E_uKGb_36KN6JLN45QjUAIP2UuIMh66hwoD_t_uzyclcOGOG-GCEg94k/exec";
+// ==== Funções do Painel ====
+async function fetchAPI(params = {}, method = "GET") {
+  const url = method === "GET" ? API_URL + "?" + new URLSearchParams(params) : API_URL;
+  const options = method === "POST" ? { method: "POST", body: JSON.stringify(params) } : {};
+  const res = await fetch(url, options);
+  return await res.json();
+}
 
+async function carregarVendas() {
+  const vendas = await fetchAPI({ action: "get" });
+  exibirVendas(vendas);
+}
 
-  const sidebar = document.getElementById('sidebar');
-  const hamburgerBtn = document.getElementById('hamburgerBtn');
-  hamburgerBtn.addEventListener('click', () => sidebar.classList.toggle('open'));
-
+function exibirVendas(vendas) {
   const lista = document.getElementById('listaVendas');
-  const totais = document.getElementById('totais');
+  lista.innerHTML = "";
+  let totalPago = 0, totalNao = 0;
 
-  async function fetchWithTimeout(resource, options = {}, timeout = 10000) {
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), timeout);
-    try {
-      const response = await fetch(resource, { ...options, signal: controller.signal });
-      clearTimeout(id);
-      if (!response.ok) throw new Error("Erro na resposta do servidor: " + response.status);
-      return response;
-    } catch (error) {
-      clearTimeout(id);
-      console.error("Erro ao conectar com o servidor:", error);
-      alert("Erro ao conectar com o servidor. Verifique sua internet ou o link da planilha.");
-      throw error;
-    }
-  }
+  vendas.forEach(v => {
+    const card = document.createElement('div');
+    card.className = "card";
 
-  function showToast(msg) {
-    const box = document.createElement("div");
-    box.className = "toast";
-    box.textContent = msg;
-    document.getElementById("toasts").appendChild(box);
-    setTimeout(() => box.remove(), 3000);
-  }
+    const info = document.createElement('div');
+    info.className = "info";
+    info.innerHTML = `<strong>${v.cliente}</strong><br>
+                      Valor: R$ ${v.valor.toFixed(2)}<br>
+                      Qtd: ${v.quantidade} | Total: R$ ${(v.valor * v.quantidade).toFixed(2)}<br>
+                      Data: ${v.dataVenda}`;
 
-  async function carregarVendas() {
-    const res = await fetchWithTimeout(API_URL + "?action=get");
-    const data = await res.json();
-    exibirVendas(data);
-  }
+    const actions = document.createElement('div');
+    actions.className = "actions";
 
-  function exibirVendas(vendas) {
-    lista.innerHTML = "";
-    vendas.sort((a,b)=>a.nome.localeCompare(b.nome));
-    let totalPago = 0, totalNao = 0;
-    vendas.forEach(v => {
-      const card = document.createElement("div");
-      card.className = "card";
+    const statusBtn = document.createElement('button');
+    statusBtn.className = "status-btn " + (v.pago ? "pago" : "nao");
+    statusBtn.textContent = v.pago ? "PAGO" : "NÃO PAGO";
+    statusBtn.onclick = () => togglePago(v.id, !v.pago);
 
-      const left = document.createElement("div");
-      left.className = "card-left";
-      left.innerHTML = `<div class="client">${v.nome}</div>
-                        <div class="meta">Valor: R$ ${v.valor}</div>
-                        <div class="meta">Qtd: ${v.quantidade} | Total: R$ ${v.total}</div>
-                        <div class="meta">${v.data}</div>`;
+    const delBtn = document.createElement('button');
+    delBtn.className = "delete-btn";
+    delBtn.textContent = "EXCLUIR";
+    delBtn.onclick = () => excluirVenda(v.id);
 
-      const right = document.createElement("div");
-      right.className = "card-right";
-      const actions = document.createElement("div");
-      actions.className = "actions";
+    actions.appendChild(statusBtn);
+    actions.appendChild(delBtn);
 
-      const pagoBtn = document.createElement("button");
-      pagoBtn.className = "icon-btn";
-      pagoBtn.innerHTML = `<i class="fa-solid fa-circle-check ${v.pago === 'TRUE' ? 'status pago' : 'status nao'}"></i>`;
-      pagoBtn.onclick = () => togglePago(v.id, v.pago);
+    card.appendChild(info);
+    card.appendChild(actions);
+    lista.appendChild(card);
 
-      const delBtn = document.createElement("button");
-      delBtn.className = "icon-btn";
-      delBtn.innerHTML = `<i class="fa-solid fa-trash"></i>`;
-      delBtn.onclick = () => excluirVenda(v.id);
+    if(v.pago) totalPago += v.valor * v.quantidade;
+    else totalNao += v.valor * v.quantidade;
+  });
 
-      actions.appendChild(pagoBtn);
-      actions.appendChild(delBtn);
-      right.appendChild(actions);
-      card.appendChild(left);
-      card.appendChild(right);
-      lista.appendChild(card);
+  document.getElementById('totais').textContent = `Total Pago: R$ ${totalPago.toFixed(2)} | Total Não Pago: R$ ${totalNao.toFixed(2)}`;
+}
 
-      if (v.pago === 'TRUE') totalPago += parseFloat(v.total);
-      else totalNao += parseFloat(v.total);
-    });
-    totais.textContent = `Total Pago: R$ ${totalPago.toFixed(2)} | Total Não Pago: R$ ${totalNao.toFixed(2)}`;
-  }
+// ==== Funções de API ====
+async function adicionarVenda() {
+  const cliente = document.getElementById('cliente').value.trim();
+  const valor = parseFloat(document.getElementById('valor').value);
+  const quantidade = parseInt(document.getElementById('quantidade').value) || 1;
+  const data = document.getElementById('dataVenda').value;
 
-  async function excluirVenda(id) {
-    if (!confirm("Deseja realmente excluir esta venda?")) return;
-    await fetchWithTimeout(API_URL + `?action=delete&id=${id}`, { method: "POST" });
-    showToast("Venda excluída!");
-    carregarVendas();
-  }
+  if(!cliente || isNaN(valor)) return alert("Preencha os campos corretamente!");
 
-  async function togglePago(id, pagoAtual) {
-    const novoStatus = pagoAtual === 'TRUE' ? 'FALSE' : 'TRUE';
-    await fetchWithTimeout(API_URL + `?action=updateStatus&id=${id}&pago=${novoStatus}`, { method: "POST" });
-    showToast("Status atualizado!");
-    carregarVendas();
-  }
-
-  document.getElementById("addBtn").onclick = async () => {
-    const nome = document.getElementById("cliente").value.trim();
-    const valor = parseFloat(document.getElementById("valor").value);
-    const qtd = parseInt(document.getElementById("quantidade").value) || 1;
-    const data = document.getElementById("dataVenda").value || new Date().toISOString().split("T")[0];
-    if (!nome || isNaN(valor)) return alert("Preencha os campos corretamente!");
-
-    const total = valor * qtd;
-    await fetchWithTimeout(API_URL + `?action=add&nome=${nome}&valor=${valor}&quantidade=${qtd}&total=${total}&data=${data}`, { method: "POST" });
-    showToast("Venda adicionada!");
-    carregarVendas();
-  };
-
+  await fetchAPI({ action: "add", cliente, valor, quantidade, dataVenda: data }, "POST");
   carregarVendas();
-  </script>
+}
+
+async function togglePago(id, novoStatus) {
+  await fetchAPI({ action: "updateStatus", id, pago: novoStatus }, "POST");
+  carregarVendas();
+}
+
+async function excluirVenda(id) {
+  if(!confirm("Deseja realmente excluir esta venda?")) return;
+  await fetchAPI({ action: "delete", id }, "POST");
+  carregarVendas();
+}
+
+// ==== Filtros ====
+function filtrar(pagoStatus) {
+  carregarVendas().then(() => {
+    const cards = document.querySelectorAll(".card");
+    cards.forEach(card => {
+      const statusBtn = card.querySelector(".status-btn");
+      if(statusBtn.textContent === "PAGO") {
+        card.style.display = pagoStatus ? "flex" : "none";
+      } else {
+        card.style.display = pagoStatus === false ? "flex" : "none";
+      }
+    });
+  });
+}
+
+// Carrega vendas ao abrir
+carregarVendas();
+</script>
 </body>
 </html>
