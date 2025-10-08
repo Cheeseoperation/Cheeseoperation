@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Painel de Vendas</title>
 
-  <!-- Fonte -->
+  <!-- Fonte Poppins -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
   <!-- Font Awesome -->
@@ -13,254 +13,254 @@
 
   <style>
     :root{
-      --bg: #0b0b0b;            /* página */
-      --surface: #111111;       /* cards / sidebar */
-      --card: #141414;          /* card inner */
-      --text: #ffffff;          /* principal */
-      --muted: #a8a8a8;         /* textos secundários */
-      --accent: #2f9cff;        /* ação */
-      --success: #00c77a;       /* pago */
-      --danger: #ff5c6c;        /* excluir */
+      --vinho: #8B0000;
+      --bg-menu: #000000;      /* sidebar sólido */
+      --bg-panel: #111111;     /* painel principal */
+      --card: #0d0d0d;
+      --text: #ffffff;
+      --muted: #bdbdbd;
+      --accent: #2f9cff;
+      --success: #00c77a;
+      --danger: #ff5c6c;
       --radius: 12px;
-      --glass: rgba(255,255,255,0.03);
-      --shadow: 0 8px 30px rgba(0,0,0,0.6);
-      --duration: 220ms;
+      --shadow: 0 10px 30px rgba(0,0,0,0.6);
+      --dur: 300ms;
+      --overlay: rgba(0,0,0,0.4);
+      --maxWidth: 1200px;
     }
     *{box-sizing:border-box}
-    html,body{
-      height:100%;
-      margin:0;
-      background:var(--bg);
-      color:var(--text);
-      font-family:"Poppins",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
-      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-      line-height:1.28;
-    }
+    html,body{height:100%;margin:0;background:var(--bg-panel);color:var(--text);font-family:'Poppins',system-ui,Arial; -webkit-font-smoothing:antialiased;}
+    a{color:inherit}
+    button{font-family:inherit}
 
-    /* Shell layout */
-    .wrap { max-width:1200px; margin:18px auto; padding:18px; display:grid; grid-template-columns:260px 1fr; gap:18px; align-items:start; }
-    @media (max-width:920px){ .wrap{ grid-template-columns:1fr; padding:12px; } }
+    /* App shell */
+    .app { max-width:var(--maxWidth); margin:18px auto; position:relative; padding:0 18px; }
+    .stage { display:grid; grid-template-columns:260px 1fr; gap:18px; align-items:start; }
+    @media (max-width:920px){ .stage { grid-template-columns:1fr; } }
 
-    /* SIDEBAR - SOLID */
+    /* Overlay for mobile when sidebar open */
+    .overlay { position:fixed; inset:0; background:transparent; z-index:1100; pointer-events:none; transition: background var(--dur) ease; }
+    .overlay.visible { background:var(--overlay); pointer-events:auto; }
+
+    /* Sidebar */
     .sidebar {
-      background: var(--surface);
+      background: var(--bg-menu);
+      color:var(--text);
       border-radius: var(--radius);
       padding:18px;
       box-shadow: var(--shadow);
       height: calc(100vh - 36px);
-      position: sticky;
+      position: fixed;
+      left: 18px;
       top: 18px;
-      display:flex;
-      flex-direction:column;
-      gap:14px;
+      width: 260px;
+      z-index: 1200;
+      transform: translateX(-320px); /* hidden by default */
+      transition: transform var(--dur) ease;
+      display:flex; flex-direction:column; gap:14px;
+    }
+    .sidebar.open { transform: translateX(0); }
+    @media (max-width:920px){
+      .sidebar { left:12px; width:70%; max-width:360px; }
+    }
+
+    .section-title { font-size:0.85rem; color:var(--muted); margin-top:6px; margin-bottom:6px; font-weight:600; }
+
+    .menu-list { display:flex; flex-direction:column; gap:8px; }
+    .menu-item {
+      border-left:4px solid transparent;
+      background:transparent;
       color:var(--text);
+      padding:10px;
+      border-radius:8px;
+      text-align:left;
+      font-weight:600;
+      cursor:pointer;
+      display:flex; align-items:center; gap:10px;
+      transition: all 220ms ease;
     }
-    .brand { display:flex; align-items:center; gap:12px; font-weight:700; font-size:1.05rem; }
-    .brand .logo {
-      width:36px; height:36px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center;
-      background:var(--text); color:var(--bg); font-weight:800;
+    .menu-item:hover { background: rgba(255,255,255,0.08); border-left-color:var(--vinho); transform:translateX(3px); }
+    .menu-item.active { background: rgba(255,255,255,0.06); border-left-color:var(--vinho); }
+
+    .months { margin-top:6px; overflow:auto; padding-right:6px; display:flex; flex-direction:column; gap:6px; max-height:52vh; }
+    .months button { background:transparent; color:var(--text); border:none; padding:8px; border-radius:8px; text-align:left; cursor:pointer; font-weight:600; }
+    .months button:hover { background: rgba(255,255,255,0.04); }
+
+    .sidebar-footer { margin-top:auto; color:var(--muted); font-size:0.85rem; }
+
+    /* Header */
+    header.app-header {
+      position: fixed; left: 0; right: 0; top: 18px; display:flex; align-items:center; justify-content:center;
+      z-index:1150; pointer-events:none;
     }
-    .section-title { font-size:0.85rem; color:var(--muted); margin:8px 0 4px 0; font-weight:600; }
-
-    .side-controls { display:flex; flex-direction:column; gap:8px; margin-bottom:6px; }
-    .side-controls button {
-      background:transparent; color:var(--text); border:none; padding:10px; border-radius:10px; text-align:left; cursor:pointer;
-      font-weight:600; transition: all var(--duration) ease;
+    .header-inner {
+      width:100%; max-width:var(--maxWidth); padding:10px 18px; display:flex; align-items:center; gap:12px; justify-content:center;
+      background: transparent; pointer-events:auto;
     }
-    .side-controls button:hover { background: rgba(255,255,255,0.02); transform: translateY(-3px); }
-    .side-controls button.active { background: rgba(255,255,255,0.035); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02); }
+    #hamburgerBtn { position:absolute; left:18px; background:var(--bg-menu); border-radius:10px; color:var(--text);
+      border:none;padding:10px; box-shadow: var(--shadow); cursor:pointer; transition: transform var(--dur); }
+    #hamburgerBtn:hover { transform:translateY(-3px); }
+    .title { font-size:1.25rem; font-weight:700; color:var(--text); text-align:center; }
 
-    .months { margin-top:6px; overflow:auto; padding-right:6px; display:flex; flex-direction:column; gap:8px; }
-    .months button { background:transparent; color:var(--text); border:none; padding:8px; border-radius:8px; text-align:left; cursor:pointer; }
-    .months button:hover { background: rgba(255,255,255,0.02); }
+    /* Main container */
+    .main {
+      margin-top:86px;
+      margin-left: 0;
+      padding: 18px;
+      border-radius: 12px;
+    }
+    @media(min-width:921px) { .main { margin-left: 0; } } /* remaining full width while sidebar closed by default */
 
-    .sidebar-footer { margin-top:auto; color:var(--muted); font-size:0.9rem; }
-
-    /* MAIN */
-    main { display:flex; flex-direction:column; gap:12px; }
-
-    /* header */
-    .topbar { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-    .top-left { display:flex; gap:12px; align-items:center; }
-    .title { font-size:1.25rem; font-weight:700; letter-spacing:0.2px; }
-    .muted { color:var(--muted); font-size:0.92rem; }
-
-    .controls { display:flex; gap:10px; align-items:center; }
-    .hamburger { display:none; background:transparent; border:none; color:var(--text); font-size:1.05rem; padding:10px; border-radius:8px; cursor:pointer; }
-    @media (max-width:920px){ .hamburger{ display:inline-flex } }
-
+    .top-controls { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
+    .left-controls { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
     .search {
-      background: var(--card);
-      border: 1px solid rgba(255,255,255,0.03);
-      padding:8px 10px; border-radius:10px; display:flex; gap:8px; align-items:center; min-width:260px;
+      background:var(--card); border:1px solid rgba(255,255,255,0.02); padding:8px 10px; border-radius:10px; display:flex; gap:8px; align-items:center;
     }
-    .search input { background:transparent; border:none; outline:none; color:var(--text); width:200px; font-size:0.95rem; }
-    .sync-btn {
-      background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--text); padding:8px 10px; border-radius:10px; cursor:pointer;
-      transition:all var(--duration);
-    }
-    .sync-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(47,153,255,0.06); }
+    .search input { background:transparent; border:none; outline:none; color:var(--text); width:220px; font-size:0.95rem; }
+    .sync-btn { background:transparent; border:1px solid rgba(255,255,255,0.03); color:var(--text); padding:8px 10px; border-radius:10px; cursor:pointer; }
+    .sync-btn:hover { box-shadow: 0 10px 30px rgba(47,153,255,0.06); transform:translateY(-3px); }
 
-    /* form */
+    /* Form */
     .form {
-      display:flex; gap:10px; align-items:center; padding:12px; border-radius:12px; background:var(--card); box-shadow: var(--shadow); flex-wrap:wrap;
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:12px; border-radius:12px; background:var(--card); box-shadow: var(--shadow);
     }
-    .form input[type="text"], .form input[type="number"], .form input[type="date"] {
-      background:transparent; border:1px solid rgba(255,255,255,0.03); padding:10px; border-radius:8px; color:var(--text); min-width:120px;
-    }
+    .form input { background:transparent; border:1px solid rgba(255,255,255,0.03); padding:10px; border-radius:8px; color:var(--text); min-width:120px; }
     .form .small { width:110px; }
-    .btn-primary { background:var(--accent); color:var(--text); border:none; padding:10px 12px; border-radius:10px; font-weight:700; cursor:pointer; transition:all var(--duration); }
-    .btn-primary:hover { transform: translateY(-3px); box-shadow:0 12px 36px rgba(51,153,255,0.08); }
+    .btn-primary { background:var(--vinho); color:var(--text); border:none; padding:9px 12px; border-radius:10px; cursor:pointer; font-weight:700; transition:all 200ms }
+    .btn-primary:hover { box-shadow: 0 10px 30px rgba(139,0,0,0.14); transform:translateY(-3px); }
 
-    /* counter row */
-    .top-meta { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:4px; }
+    /* Counter row */
+    .meta-row { display:flex; justify-content:space-between; align-items:center; margin-top:10px; margin-bottom:8px; gap:10px; flex-wrap:wrap; }
     .counter { color:var(--muted); font-weight:600; }
 
-    /* cards grid */
-    .cards { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:8px; }
-    @media (max-width:920px){ .cards { grid-template-columns:1fr } }
+    /* Cards grid */
+    .cards { display:grid; gap:12px; grid-template-columns:repeat(2,1fr); }
+    @media (max-width:920px) { .cards { grid-template-columns:1fr; } }
 
     .card {
       background: var(--card);
-      border-radius: 12px;
-      padding:14px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      box-shadow: 0 8px 28px rgba(0,0,0,0.6);
-      transition: transform var(--duration), box-shadow var(--duration), opacity var(--duration);
+      padding:14px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;
+      box-shadow: var(--shadow); transition: transform 200ms ease, box-shadow 200ms ease;
     }
+    .card:hover { transform:translateY(-4px); }
     .card-left { display:flex; flex-direction:column; gap:6px; max-width:68%; }
-    .client { font-weight:700; font-size:1rem; color:var(--text); }
-    .meta { color:var(--muted); font-size:0.9rem; }
+    .client { font-weight:700; font-size:1rem; }
+    .meta { color:var(--muted); font-size:0.88rem; }
 
-    .card-right { display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
+    .card-right { display:flex; gap:10px; align-items:center; }
 
-    /* icon circle minimal */
-    .icon {
-      width:46px; height:46px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; border:none; cursor:pointer;
-      background:transparent; color:var(--muted); font-size:1.05rem; transition: transform var(--duration), box-shadow var(--duration), color var(--duration);
+    .icon-btn {
+      width:44px;height:44px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--text);cursor:pointer;transition:all 180ms;
     }
-    .icon:hover { transform:translateY(-4px); }
-    .icon.paid { color:var(--success); box-shadow: 0 8px 26px rgba(0,199,136,0.06); }
-    .icon.unpaid { color:var(--muted); }
-    .icon.del { color:var(--danger); }
-    .icon.del:hover { box-shadow: 0 10px 26px rgba(255,92,108,0.07); transform: translateY(-3px) scale(1.05); }
+    .icon-btn.paid { color:var(--success); box-shadow: 0 8px 26px rgba(0,199,136,0.06); }
+    .icon-btn.del { color:var(--danger); }
+    .icon-btn:hover { transform:translateY(-4px) scale(1.03); }
 
-    /* totals footer */
-    .footer { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px; border-radius:12px; margin-top:12px;
-      background:var(--surface); box-shadow: var(--shadow);
+    .totals {
+      margin-top:14px; padding:12px; border-radius:12px; background:var(--bg-menu); color:var(--text); font-weight:700; box-shadow: var(--shadow);
     }
-    .totals-text { font-weight:700; }
-    .bar { flex:1; margin-left:14px; height:10px; background:rgba(255,255,255,0.03); border-radius:999px; overflow:hidden; }
-    .bar .paid { height:100%; background:linear-gradient(90deg,var(--success), #00f0a0); display:block; }
-
-    /* placeholder card when empty */
-    .placeholder { padding:18px; border-radius:12px; text-align:center; color:var(--muted); }
 
     /* toast */
-    .toast-wrap { position:fixed; right:18px; bottom:18px; display:flex; flex-direction:column; gap:8px; z-index:9999; }
-    .toast { background:#111; color:var(--text); padding:10px 14px; border-radius:10px; box-shadow:0 8px 28px rgba(0,0,0,0.6); opacity:0.98; }
+    .toast-wrap { position:fixed; right:18px; bottom:18px; z-index:1400; display:flex; flex-direction:column; gap:8px; }
+    .toast { background:#111; color:var(--text); padding:10px 12px; border-radius:10px; box-shadow: 0 8px 26px rgba(0,0,0,0.6); }
 
     /* focus */
-    input:focus, button:focus { outline: 2px solid rgba(47,153,255,0.12); outline-offset:2px; border-radius:8px; }
+    input:focus, button:focus { outline: 2px solid rgba(139,0,0,0.12); outline-offset:2px; border-radius:8px; }
   </style>
 </head>
 <body>
-  <div class="wrap" role="application" aria-label="Painel de Vendas">
-    <!-- SIDEBAR -->
-    <aside class="sidebar" id="sidebar" aria-label="Filtros">
-      <div class="brand"><div class="logo">PV</div> <div>Painel de Vendas</div></div>
+  <div class="overlay" id="overlay"></div>
 
-      <div class="side-section">
-        <div class="section-title">Filtros</div>
-        <div class="side-controls" role="toolbar" aria-label="Filtros de status">
-          <button id="btnTodas" onclick="setFiltro(null,null)">Todas</button>
-          <button id="btnPagas" onclick="setFiltro('pago',null)">Pagas</button>
-          <button id="btnNao" onclick="setFiltro('nao',null)">Não Pagas</button>
+  <div class="app">
+    <div class="stage">
+      <!-- Sidebar (recolhida por padrão) -->
+      <aside class="sidebar" id="sidebar" aria-label="Menu lateral" role="navigation" aria-hidden="true">
+        <div class="section-title">Menu</div>
+        <div class="menu-list" role="menu">
+          <button class="menu-item active" data-action="dashboard"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Painel</button>
+          <button class="menu-item" id="syncMenuBtn"><i class="fa-solid fa-sync-alt" aria-hidden="true"></i> Sincronizar</button>
+          <button class="menu-item" data-action="filters"><i class="fa-solid fa-filter" aria-hidden="true"></i> Filtros</button>
         </div>
-      </div>
 
-      <div class="side-section">
         <div class="section-title">Meses</div>
         <div class="months" id="mesesMenu" aria-label="Meses"></div>
-      </div>
 
-      <div class="sidebar-footer">© Sistema • Interface corporativa</div>
-    </aside>
+        <div class="sidebar-footer" style="margin-top:auto">© Painel</div>
+      </aside>
 
-    <!-- MAIN -->
-    <main>
-      <div class="topbar">
-        <div class="top-left">
-          <button class="hamburger" id="hamburgerBtn" aria-label="Abrir filtros"><i class="fa-solid fa-bars"></i></button>
-          <div style="display:flex;flex-direction:column">
-            <div class="title">Painel de Vendas</div>
-            <div class="muted" style="margin-top:4px">Visão geral</div>
+      <!-- Header fixed -->
+      <header class="app-header">
+        <div class="header-inner" role="banner">
+          <button id="hamburgerBtn" aria-label="Abrir menu"><i class="fa-solid fa-bars"></i></button>
+          <div class="title">Painel de Vendas</div>
+        </div>
+      </header>
+
+      <!-- Main -->
+      <main class="main" id="main" role="main">
+        <div class="top-controls">
+          <div class="left-controls">
+            <div class="search" role="search">
+              <i class="fa-solid fa-magnifying-glass" style="color:var(--muted)"></i>
+              <input id="searchInput" placeholder="Buscar por cliente..." aria-label="Buscar por cliente" />
+            </div>
+            <button id="syncBtn" class="sync-btn" title="Sincronizar agora">🔄 Sincronizar</button>
+          </div>
+
+          <div style="display:flex;gap:10px;align-items:center">
+            <div style="color:var(--muted);font-weight:600" id="filtroInfo">Filtrando: Todas</div>
           </div>
         </div>
 
-        <div class="controls">
-          <div class="search" role="search" aria-label="Buscar por cliente">
-            <i class="fa-solid fa-magnifying-glass" style="color:var(--muted)"></i>
-            <input id="searchInput" placeholder="Buscar por cliente..." />
-          </div>
-          <button id="syncBtn" class="sync-btn" title="Sincronizar">🔄 Sincronizar</button>
+        <!-- form -->
+        <div class="form" role="form" aria-label="Adicionar venda">
+          <input id="cliente" type="text" placeholder="Nome do cliente" aria-label="Nome do cliente" />
+          <input id="valorUnit" type="number" placeholder="Valor unitário (R$)" min="0" step="0.01" aria-label="Valor unitário" />
+          <input id="quantidade" class="small" type="number" placeholder="Qtd" min="1" value="1" aria-label="Quantidade" />
+          <input id="valorTotal" type="number" placeholder="Total (R$)" min="0" step="0.01" aria-label="Valor total" />
+          <input id="dataVenda" type="date" aria-label="Data da venda" />
+          <button class="btn-primary" id="addBtn" aria-label="Adicionar venda"><i class="fa-solid fa-plus"></i>&nbsp;&nbsp;Adicionar</button>
         </div>
-      </div>
 
-      <!-- form -->
-      <div class="form" role="form" aria-label="Adicionar venda">
-        <input id="cliente" type="text" placeholder="Nome do cliente" aria-label="Nome do cliente" />
-        <input id="valorUnit" type="number" placeholder="Valor unitário (R$)" min="0" step="0.01" aria-label="Valor unitário" />
-        <input id="quantidade" type="number" class="small" placeholder="Qtd" min="1" value="1" aria-label="Quantidade" />
-        <input id="valorTotal" type="number" placeholder="Total (R$)" min="0" step="0.01" aria-label="Valor total" />
-        <input id="dataVenda" type="date" aria-label="Data da venda" />
-        <button class="btn-primary" id="addBtn" aria-label="Adicionar"><i class="fa-solid fa-plus"></i>&nbsp;&nbsp;Adicionar</button>
-      </div>
+        <div class="meta-row">
+          <div class="counter" id="contador">0 vendas exibidas</div>
+          <div class="muted" id="lastSync">Última sincronização: —</div>
+        </div>
 
-      <!-- counter -->
-      <div class="top-meta">
-        <div class="counter" id="contador">0 vendas exibidas</div>
-        <div class="muted" id="filtroInfo">Filtrando: Todas</div>
-      </div>
+        <!-- cards -->
+        <section>
+          <div id="cards" class="cards" aria-live="polite"></div>
+        </section>
 
-      <!-- cards -->
-      <section>
-        <div id="cardsContainer" class="cards" aria-live="polite"></div>
-      </section>
-
-      <!-- footer totals -->
-      <div class="footer" role="contentinfo">
-        <div class="totals-text" id="totaisText">Total Pago: R$ 0,00 | Total Não Pago: R$ 0,00</div>
-        <div class="bar" aria-hidden="true"><div id="paidBar" class="paid" style="width:0%"></div></div>
-      </div>
-    </main>
+        <div class="totals" id="totais">Total Pago: R$ 0,00 | Total Não Pago: R$ 0,00</div>
+      </main>
+    </div>
   </div>
 
-  <!-- toasts -->
-  <div class="toast-wrap" id="toasts" aria-live="polite" aria-atomic="true"></div>
+  <div class="toast-wrap" id="toasts" aria-live="polite"></div>
 
   <script>
-    /* ================= Config ================= */
+    /* ================= CONFIG ================= */
     const API_URL = "https://script.google.com/macros/s/AKfycbycXqhk6YtdwZQOfbnx8OqnAwy8o9AkQYoZTXs24VZaAdaIZ-ELC77lPlHkKNOS1in3/exec";
     const nomesMes = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 
-    /* ================ Estado ================ */
-    let vendas = []; // { id, cliente, valorUnit, quantidade, valorTotal, dataVenda, pago }
+    /* ================ STATE ================ */
+    let vendas = []; // {id, cliente, valorUnit, quantidade, valorTotal, dataVenda (YYYY-MM-DD), pago}
     let filtroMes = null;
     let filtroStatus = null;
+    let ultimaUnitDetectada = null;
 
-    /* ================ Elements ================ */
+    /* ================ ELEMENTS ================ */
     const sidebar = document.getElementById('sidebar');
     const hamburgerBtn = document.getElementById('hamburgerBtn');
-    const cardsContainer = document.getElementById('cardsContainer');
+    const overlay = document.getElementById('overlay');
+    const cardsEl = document.getElementById('cards');
     const searchInput = document.getElementById('searchInput');
     const mesesMenu = document.getElementById('mesesMenu');
     const contadorEl = document.getElementById('contador');
     const filtroInfoEl = document.getElementById('filtroInfo');
-    const totaisText = document.getElementById('totaisText');
-    const paidBar = document.getElementById('paidBar');
+    const lastSyncEl = document.getElementById('lastSync');
+    const totaisEl = document.getElementById('totais');
     const toasts = document.getElementById('toasts');
 
     // form
@@ -271,52 +271,51 @@
     const dataEl = document.getElementById('dataVenda');
     const addBtn = document.getElementById('addBtn');
     const syncBtn = document.getElementById('syncBtn');
+    const syncMenuBtn = document.getElementById('syncMenuBtn');
 
-    /* ================ Helpers ================ */
-    const formatBRL = (v) => Number(v||0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+    /* ================ HELPERS ================ */
     const hojeISO = () => new Date().toISOString().split('T')[0];
+    const formatBRL = (v) => Number(v||0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
 
-    function toast(msg, short = true){
+    function toast(msg, short=true){
       const t = document.createElement('div');
       t.className = 'toast';
       t.textContent = msg;
       toasts.appendChild(t);
-      setTimeout(()=> t.style.opacity = '0.0', short ? 1800 : 3600);
-      setTimeout(()=> t.remove(), short ? 2200 : 4000);
+      setTimeout(()=> t.style.opacity = '0', short?1800:3600);
+      setTimeout(()=> t.remove(), short?2200:4000);
     }
 
-    // hamburger mobile behavior
-    hamburgerBtn.addEventListener('click', () => sidebar.classList.toggle('open'));
-    document.addEventListener('click', (e) => {
-      if (window.innerWidth > 920) return;
-      if (!sidebar.classList.contains('open')) return;
-      if (e.target.closest('.sidebar') || e.target.closest('#hamburgerBtn')) return;
-      sidebar.classList.remove('open');
-    });
+    /* ================ SIDEBAR / OVERLAY ================ */
+    function openSidebar(){ sidebar.classList.add('open'); overlay.classList.add('visible'); sidebar.setAttribute('aria-hidden','false'); }
+    function closeSidebar(){ sidebar.classList.remove('open'); overlay.classList.remove('visible'); sidebar.setAttribute('aria-hidden','true'); }
+    hamburgerBtn.addEventListener('click', () => { if (sidebar.classList.contains('open')) closeSidebar(); else openSidebar(); });
+    overlay.addEventListener('click', closeSidebar);
+    window.addEventListener('resize', () => { if (window.innerWidth > 920) closeSidebar(); });
 
-    /* ============== Form logic (unit/qty/total) ============== */
-    let ultimaUnit = null;
+    /* ================ FORM: unit/qty/total logic ================ */
+    dataEl.value = hojeISO();
+
     valorUnitEl.addEventListener('input', () => {
-      const u = parseFloat(valorUnitEl.value);
-      if (!isNaN(u) && u >= 0) ultimaUnit = u;
+      const v = parseFloat(valorUnitEl.value);
+      if (!isNaN(v)) ultimaUnitDetectada = v;
       recalcularTotalAuto();
     });
     qtdEl.addEventListener('input', () => recalcularTotalAuto());
-    valorTotalEl.addEventListener('input', () => { /* editable by user - allowed */ });
 
     function recalcularTotalAuto(){
-      const unit = parseFloat(valorUnitEl.value);
-      const q = parseInt(qtdEl.value) || 1;
-      // se usuário digitou unit, usamos ele; senão, se ultimaUnit detectada use ela; caso contrário não forçamos
-      const base = (!isNaN(unit) && unit >= 0) ? unit : (ultimaUnit || 0);
-      if (base !== null) {
+      const unit = Number(valorUnitEl.value);
+      const q = Number(qtdEl.value) || 1;
+      const base = (!isNaN(unit) && unit >= 0) ? unit : (ultimaUnitDetectada || 0);
+      if (base) {
         const total = base * q;
         valorTotalEl.value = total ? total.toFixed(2) : '';
       }
     }
+    valorTotalEl.addEventListener('input', () => { /* manual edit allowed */ });
 
-    /* ============== Fetch util (timeout) ============== */
-    async function fetchWithTimeout(url, opts = {}, timeout = 12000){
+    /* ================ FETCH UTIL (timeout) ================ */
+    async function fetchWithTimeout(url, opts={}, timeout=12000){
       const controller = new AbortController();
       const id = setTimeout(()=> controller.abort(), timeout);
       try {
@@ -329,12 +328,12 @@
       }
     }
 
-    /* ============== Load / Sync ============== */
+    /* ================ LOAD / SYNC ================ */
     async function carregarVendas(){
       syncBtn.disabled = true;
       syncBtn.textContent = '🔄 Sincronizando...';
       try {
-        const res = await fetchWithTimeout(API_URL + '?acao=listar', { cache:'no-store' }, 12000);
+        const res = await fetchWithTimeout(API_URL + '?acao=listar', { cache: 'no-store' }, 12000);
         const data = await res.json();
         vendas = (Array.isArray(data) ? data : []).map(r => {
           const valorTotal = Number(r.valor || r.Valor || r.total || r.value || 0);
@@ -342,19 +341,20 @@
           const valorUnit = quantidade > 0 ? (valorTotal / quantidade) : valorTotal;
           return {
             id: String(r.id || r.ID || r.Id || r.rowId || (Date.now() + Math.random())),
-            cliente: (r.cliente || r.Cliente || r.nome || r.name || '').toString(),
+            cliente: String(r.cliente || r.Cliente || r.nome || r.name || ''),
             valorUnit: Number(valorUnit || 0),
             quantidade: Number(quantidade || 1),
             valorTotal: Number(valorTotal || (valorUnit * quantidade)),
-            dataVenda: (r.dataVenda || r.DataVenda || r.date || r.data || hojeISO()),
+            dataVenda: String(r.dataVenda || r.DataVenda || r.date || r.data || hojeISO()),
             pago: (r.pago === true || r.pago === 'true' || r.pago === '1' || r.pago === 1)
           };
         });
         ordenarVendas();
         gerarBotoesMeses();
         atualizarLista();
+        lastSyncEl.textContent = `Última sincronização: ${new Date().toLocaleString()}`;
         toast('Sincronização concluída', true);
-      } catch (err){
+      } catch (err) {
         console.error('carregarVendas', err);
         toast('Erro ao sincronizar. Verifique conexão.', false);
       } finally {
@@ -363,14 +363,14 @@
       }
     }
     syncBtn.addEventListener('click', carregarVendas);
+    if (syncMenuBtn) syncMenuBtn.addEventListener('click', carregarVendas);
 
-    /* ============== ordenar / gerar meses / filtros ============== */
-    function ordenarVendas(){ vendas.sort((a,b)=> (a.cliente||'').localeCompare((b.cliente||''), 'pt-BR', {sensitivity:'base'})); }
+    /* ================ MESES / FILTROS / ORDENAÇÃO ================ */
+    function ordenarVendas(){ vendas.sort((a,b) => (a.cliente || '').localeCompare(b.cliente || '', 'pt-BR', { sensitivity:'base' })); }
 
     function gerarBotoesMeses(){
       mesesMenu.innerHTML = '';
-      const btnAll = document.createElement('button');
-      btnAll.textContent = 'Todos os Meses';
+      const btnAll = document.createElement('button'); btnAll.textContent = 'Todos os Meses';
       if (filtroMes === null) btnAll.classList.add('active');
       btnAll.onclick = () => setFiltro(null,null);
       mesesMenu.appendChild(btnAll);
@@ -384,6 +384,7 @@
         const mes = String(d.getMonth()+1).padStart(2,'0');
         setMes.add(`${ano}-${mes}`);
       });
+
       Array.from(setMes).sort((a,b)=> b.localeCompare(a)).forEach(mstr => {
         const [y,m] = mstr.split('-');
         const b = document.createElement('button');
@@ -397,15 +398,11 @@
     function setFiltro(status, mes){
       filtroStatus = status;
       filtroMes = mes;
-      document.querySelectorAll('.side-controls button').forEach(btn => btn.classList.remove('active'));
-      if (status === null) document.getElementById('btnTodas').classList.add('active');
-      else if (status === 'pago') document.getElementById('btnPagas').classList.add('active');
-      else if (status === 'nao') document.getElementById('btnNao').classList.add('active');
       gerarBotoesMeses();
       atualizarLista();
     }
 
-    /* ============== Add venda ============== */
+    /* ================ ADICIONAR VENDA ================ */
     addBtn.addEventListener('click', async () => {
       const cliente = (clienteEl.value || '').trim();
       const unit = Number(valorUnitEl.value) || 0;
@@ -435,35 +432,35 @@
           quantidade,
           valorTotal: Number(total),
           dataVenda,
-          pago: false
+          pago:false
         };
         vendas.push(item);
         ordenarVendas();
         gerarBotoesMeses();
         atualizarLista();
-        // limpar form
+        // clear form
         clienteEl.value = '';
         valorUnitEl.value = '';
         qtdEl.value = '1';
         valorTotalEl.value = '';
         dataEl.value = hojeISO();
-        ultimaUnit = null;
+        ultimaUnitDetectada = null;
         toast('Venda adicionada', true);
-      } catch (err){
+      } catch (err) {
         console.error('adicionar', err);
         toast('Erro ao adicionar venda', false);
       } finally { addBtn.disabled = false; }
     });
 
-    /* ============== Toggle pago ============== */
+    /* ================ TOGGLE PAGO ================ */
     async function togglePago(id, btnEl){
-      const idx = vendas.findIndex(x=> x.id === id);
+      const idx = vendas.findIndex(x => x.id === id);
       if (idx === -1) return;
       const item = vendas[idx];
       const prev = item.pago;
       item.pago = !item.pago;
 
-      // small animation
+      // small visual feedback
       const card = btnEl.closest('.card');
       if (card) card.animate([{transform:'scale(1)'},{transform:'scale(.98)'},{transform:'scale(1)'}], {duration:200, easing:'ease-out'});
 
@@ -472,7 +469,7 @@
         const payload = { acao:'atualizar', id: item.id, pago: item.pago };
         await fetchWithTimeout(API_URL, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) }, 10000);
         toast('Status atualizado', true);
-      } catch (err){
+      } catch (err) {
         console.error('togglePago', err);
         item.pago = prev;
         atualizarLista();
@@ -480,10 +477,10 @@
       }
     }
 
-    /* ============== Excluir ============== */
+    /* ================ EXCLUIR ================ */
     async function excluirVenda(id, btnEl){
       if (!confirm('Confirmar exclusão?')) return;
-      const idx = vendas.findIndex(x=> x.id === id);
+      const idx = vendas.findIndex(x => x.id === id);
       if (idx === -1) return;
       const card = btnEl.closest('.card');
       if (card) card.classList.add('fade-out');
@@ -492,19 +489,20 @@
         gerarBotoesMeses();
         atualizarLista();
         toast('Venda excluída', true);
-      }, 200);
+      }, 180);
+
       try {
         const payload = { acao:'excluir', id };
         await fetchWithTimeout(API_URL, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) }, 10000);
-      } catch (err){
+      } catch (err) {
         console.error('excluir', err);
         toast('Erro ao excluir no servidor', false);
       }
     }
 
-    /* ============== Atualizar / Render ============== */
+    /* ================ ATUALIZAR LISTA / RENDER ================ */
     function atualizarLista(){
-      cardsContainer.innerHTML = '';
+      cardsEl.innerHTML = '';
       const q = (searchInput.value || '').trim().toLowerCase();
 
       let filtradas = vendas.filter(v => {
@@ -519,66 +517,64 @@
         return true;
       });
 
-      // ordenar alfabeticamente
-      filtradas.sort((a,b) => (a.cliente||'').localeCompare(b.cliente||'', 'pt-BR', {sensitivity:'base'}));
+      filtradas.sort((a,b)=> (a.cliente||'').localeCompare(b.cliente||'', 'pt-BR', {sensitivity:'base'}));
 
       let totalPago = 0, totalNao = 0;
       if (filtradas.length === 0){
-        const p = document.createElement('div'); p.className = 'placeholder'; p.textContent = 'Nenhuma venda encontrada.'; cardsContainer.appendChild(p);
+        const empty = document.createElement('div'); empty.className = 'card'; empty.innerHTML = `<div class="client" style="color:var(--muted)">Nenhuma venda encontrada.</div>`;
+        cardsEl.appendChild(empty);
       } else {
         filtradas.forEach(v => {
           const card = document.createElement('article'); card.className = 'card';
+
           const left = document.createElement('div'); left.className = 'card-left';
-          const clientEl = document.createElement('div'); clientEl.className = 'client'; clientEl.textContent = v.cliente || '(sem nome)';
-          const metaEl = document.createElement('div'); metaEl.className = 'meta';
-          metaEl.innerHTML = `${v.quantidade}x • ${new Date(v.dataVenda).toLocaleDateString('pt-BR')} • <span style="color:var(--muted)">${formatBRL(v.valorTotal)}</span>`;
-          left.appendChild(clientEl); left.appendChild(metaEl);
+          const client = document.createElement('div'); client.className = 'client'; client.textContent = v.cliente || '(sem nome)';
+          const meta = document.createElement('div'); meta.className = 'meta';
+          meta.innerHTML = `${v.quantidade}x • ${new Date(v.dataVenda).toLocaleDateString('pt-BR')} • <span style="color:var(--muted)">${formatBRL(v.valorTotal)}</span>`;
+          left.appendChild(client); left.appendChild(meta);
 
           const right = document.createElement('div'); right.className = 'card-right';
-
-          const paidBtn = document.createElement('button');
-          paidBtn.className = 'icon' + (v.pago ? ' paid' : ' unpaid');
+          const paidBtn = document.createElement('button'); paidBtn.className = 'icon-btn' + (v.pago ? ' paid' : '');
           paidBtn.setAttribute('aria-label', v.pago ? 'Marcar como não pago' : 'Marcar como pago');
-          paidBtn.innerHTML = '<i class="fa-solid fa-check-circle"></i>';
+          paidBtn.innerHTML = `<i class="fa-solid fa-check-circle"></i>`;
           paidBtn.onclick = (ev) => togglePago(v.id, ev.currentTarget);
 
-          const delBtn = document.createElement('button');
-          delBtn.className = 'icon del';
-          delBtn.setAttribute('aria-label', 'Excluir venda');
-          delBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+          const delBtn = document.createElement('button'); delBtn.className = 'icon-btn del';
+          delBtn.setAttribute('aria-label','Excluir venda');
+          delBtn.innerHTML = `<i class="fa-solid fa-trash"></i>`;
           delBtn.onclick = (ev) => excluirVenda(v.id, ev.currentTarget);
 
           right.appendChild(paidBtn); right.appendChild(delBtn);
 
           card.appendChild(left); card.appendChild(right);
-          cardsContainer.appendChild(card);
+          cardsEl.appendChild(card);
 
-          if (v.pago) totalPago += Number(v.valorTotal || 0); else totalNao += Number(v.valorTotal || 0);
+          if (v.pago) totalPago += Number(v.valorTotal||0); else totalNao += Number(v.valorTotal||0);
         });
       }
 
-      // totals UI
-      const totalGeral = totalPago + totalNao;
-      const pct = totalGeral ? Math.round((totalPago/totalGeral)*100) : 0;
-      totaisText.textContent = `Total Pago: ${formatBRL(totalPago)} | Total Não Pago: ${formatBRL(totalNao)}`;
-      paidBar.style.width = pct + '%';
-
-      // counter & filter info
+      totaisEl.textContent = `Total Pago: ${formatBRL(totalPago)} | Total Não Pago: ${formatBRL(totalNao)}`;
       contadorEl.textContent = `${filtradas.length} venda${filtradas.length === 1 ? '' : 's'} exibida${filtradas.length === 1 ? '' : 's'}`;
       filtroInfoEl.textContent = filtroStatus ? (filtroStatus === 'pago' ? 'Filtrando: Pagas' : 'Filtrando: Não Pagas') : 'Filtrando: Todas';
     }
 
-    /* ============== init ============== */
+    /* ================ INIT ================ */
     (function init(){
-      dataEl.value = hojeISO();
-      searchInput.addEventListener('input', atualizarLista);
-      valorUnitEl.addEventListener('input', () => { ultimaUnit = parseFloat(valorUnitEl.value) || ultimaUnit; recalcularTotalAuto(); });
-      qtdEl.addEventListener('input', recalcularTotalAuto);
-      valorTotalEl.addEventListener('input', ()=>{}); // editable
+      // default: sidebar closed
+      sidebar.classList.remove('open');
+      overlay.classList.remove('visible');
+      sidebar.setAttribute('aria-hidden','true');
 
-      // load
+      // listeners
+      searchInput.addEventListener('input', atualizarLista);
+      valorUnitEl.addEventListener('input', () => { ultimaUnitDetectada = parseFloat(valorUnitEl.value) || ultimaUnitDetectada; recalcularTotalAuto(); });
+      qtdEl.addEventListener('input', recalcularTotalAuto);
+      valorTotalEl.addEventListener('input', ()=>{});
+      dataEl.value = hojeISO();
+
+      // load data
       carregarVendas();
-    }());
+    })();
   </script>
 </body>
 </html>
