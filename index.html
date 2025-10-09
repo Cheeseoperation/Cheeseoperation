@@ -12,7 +12,6 @@
     --text: #fff;
     --green: #00b894;
     --red: #d63031;
-    --accent: #222;
   }
 
   * { box-sizing: border-box; font-family: "Poppins", sans-serif; }
@@ -38,9 +37,10 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.5);
   }
 
+  /* Botões do topo */
   #topButtons {
     position: fixed;
-    top: 14px;
+    top: 18px;
     right: 18px;
     display: flex;
     gap: 10px;
@@ -48,21 +48,19 @@
   }
 
   .top-btn {
-    font-size: 1.2rem;
-    background: var(--accent);
-    border: none;
+    background: #111;
     color: white;
-    cursor: pointer;
+    border: none;
+    font-size: 1.2rem;
+    padding: 10px 14px;
     border-radius: 50%;
-    width: 42px;
-    height: 42px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    cursor: pointer;
     transition: 0.3s;
   }
 
-  .top-btn:hover { background: #333; }
+  .top-btn:hover {
+    background: #222;
+  }
 
   #sidebar {
     position: fixed;
@@ -106,7 +104,7 @@
     margin-bottom: 20px;
   }
 
-  input, button, select {
+  input, button {
     padding: 14px;
     border-radius: 20px;
     border: none;
@@ -114,7 +112,7 @@
     outline: none;
   }
 
-  input, select { background: #222; color: white; }
+  input { background: #222; color: white; }
   input::placeholder { color: #aaa; }
 
   button {
@@ -140,7 +138,6 @@
   }
 
   .info { font-size: 0.9rem; flex: 1 1 180px; }
-
   .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 
   .status-btn, .delete-btn {
@@ -152,6 +149,7 @@
     cursor: pointer;
     flex: 1 1 100px;
     text-align: center;
+    transition: 0.3s;
   }
 
   .status-btn.pago { color: var(--green); }
@@ -167,17 +165,9 @@
     padding: 14px;
   }
 
-  #mesFiltroContainer {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-
-  #mesFiltro {
-    background: #222;
-    border-radius: 18px;
-    padding: 10px;
-    color: white;
-    font-weight: 600;
+  .loading {
+    opacity: 0.6;
+    pointer-events: none;
   }
 
   @media (max-width: 480px) {
@@ -187,17 +177,18 @@
 </style>
 </head>
 <body>
+
 <header>Painel de Vendas</header>
 
 <div id="topButtons">
-  <button id="hamburgerBtn" class="top-btn">&#9776;</button>
-  <button id="syncBtn" class="top-btn" title="Sincronizar">&#x21bb;</button>
+  <button class="top-btn" id="hamburgerBtn">&#9776;</button>
+  <button class="top-btn" onclick="sincronizar()">⟳</button>
 </div>
 
 <aside id="sidebar">
-  <div class="menu-item" onclick="carregarVendas()">Todas</div>
-  <div class="menu-item" onclick="filtrar(true)">Pagas</div>
-  <div class="menu-item" onclick="filtrar(false)">Não Pagas</div>
+  <div class="menu-item" onclick="filtrar('todas')">Todas</div>
+  <div class="menu-item" onclick="filtrar('pago')">Pagas</div>
+  <div class="menu-item" onclick="filtrar('nao')">Não Pagas</div>
 </aside>
 
 <main>
@@ -209,66 +200,42 @@
     <button onclick="adicionarVenda()">Adicionar</button>
   </section>
 
-  <div id="mesFiltroContainer">
-    <select id="mesFiltro" onchange="filtrarMes()"></select>
-  </div>
-
   <div id="listaVendas"></div>
   <div class="totals" id="totais">Total Pago: R$ 0,00 | Total Não Pago: R$ 0,00</div>
 </main>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbwbGpkzdk-uowBk1Mg3LKUnJZ8vk1yuj7HYZZk_tUUw6Vo8gpCQMx3g_TUzuNkvTyjM/exec";
-
 const sidebar = document.getElementById('sidebar');
 const hamburgerBtn = document.getElementById('hamburgerBtn');
-const syncBtn = document.getElementById('syncBtn');
 const dataVenda = document.getElementById('dataVenda');
-const mesFiltro = document.getElementById('mesFiltro');
+let cacheVendas = [];
 
-hamburgerBtn.addEventListener('click', e => { e.stopPropagation(); sidebar.classList.toggle('open'); });
-document.addEventListener('click', e => { if(!sidebar.contains(e.target) && !hamburgerBtn.contains(e.target)) sidebar.classList.remove('open'); });
-syncBtn.addEventListener('click', carregarVendas);
-
+hamburgerBtn.addEventListener('click', e => { 
+  e.stopPropagation(); 
+  sidebar.classList.toggle('open'); 
+});
+document.addEventListener('click', e => { 
+  if(!sidebar.contains(e.target) && !hamburgerBtn.contains(e.target)) sidebar.classList.remove('open'); 
+});
 dataVenda.value = new Date().toISOString().split('T')[0];
 
-let todasVendas = [];
-
 async function fetchAPI(params = {}, method = "GET") {
-  const url = method === "GET" ? API_URL + "?" + new URLSearchParams(params) : API_URL;
-  const options = method === "POST" ? { method: "POST", body: JSON.stringify(params) } : {};
-  const res = await fetch(url, options);
-  return await res.json();
-}
-
-async function carregarVendas() {
   try {
-    const vendas = await fetchAPI({ action: "get" });
-    todasVendas = vendas.sort((a, b) => a.cliente.localeCompare(b.cliente));
-    preencherFiltroMes();
-    filtrarMes();
-  } catch (e) {
-    alert("Erro ao carregar dados. Verifique sua conexão e tente novamente.");
+    const url = method === "GET" ? API_URL + "?" + new URLSearchParams(params) : API_URL;
+    const options = method === "POST" ? { method: "POST", body: JSON.stringify(params) } : {};
+    const res = await fetch(url, options);
+    return await res.json();
+  } catch {
+    alert("Erro ao carregar dados. Verifique sua conexão.");
+    return [];
   }
 }
 
-function preencherFiltroMes() {
-  const meses = [...new Set(todasVendas.map(v => v.dataVenda.slice(0, 7)))];
-  mesFiltro.innerHTML = meses.map(m => {
-    const [ano, mes] = m.split("-");
-    return `<option value="${m}">${mesNome(mes)}/${ano}</option>`;
-  }).join("");
-}
-
-function mesNome(m) {
-  const nomes = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
-  return nomes[parseInt(m)-1];
-}
-
-function filtrarMes() {
-  const mesSelecionado = mesFiltro.value;
-  const vendasFiltradas = todasVendas.filter(v => v.dataVenda.startsWith(mesSelecionado));
-  exibirVendas(vendasFiltradas);
+async function carregarVendas() {
+  const vendas = await fetchAPI({ action: "get" });
+  cacheVendas = Array.isArray(vendas) ? vendas.sort((a,b)=>a.cliente.localeCompare(b.cliente)) : [];
+  exibirVendas(cacheVendas);
 }
 
 function exibirVendas(vendas) {
@@ -277,17 +244,15 @@ function exibirVendas(vendas) {
   let totalPago = 0, totalNao = 0;
 
   vendas.forEach(v => {
-    const valor = parseFloat(v.valor) || 0;
-    const quantidade = parseInt(v.quantidade) || 1;
-
     const card = document.createElement('div');
     card.className = "card";
 
     const info = document.createElement('div');
     info.className = "info";
+    const total = (parseFloat(v.valor) * parseInt(v.quantidade || 1)) || 0;
     info.innerHTML = `<strong>${v.cliente}</strong><br>
-                      Valor: R$ ${valor.toFixed(2)}<br>
-                      Qtd: ${quantidade} | Total: R$ ${(valor * quantidade).toFixed(2)}<br>
+                      Valor: R$ ${parseFloat(v.valor).toFixed(2)}<br>
+                      Qtd: ${v.quantidade} | Total: R$ ${total.toFixed(2)}<br>
                       Data: ${v.dataVenda}`;
 
     const actions = document.createElement('div');
@@ -296,12 +261,12 @@ function exibirVendas(vendas) {
     const statusBtn = document.createElement('button');
     statusBtn.className = "status-btn " + (v.pago ? "pago" : "nao");
     statusBtn.textContent = v.pago ? "PAGO" : "NÃO PAGO";
-    statusBtn.onclick = () => togglePago(v.id, !v.pago);
+    statusBtn.onclick = async () => togglePago(v.id, !v.pago, card);
 
     const delBtn = document.createElement('button');
     delBtn.className = "delete-btn";
     delBtn.textContent = "EXCLUIR";
-    delBtn.onclick = () => excluirVenda(v.id);
+    delBtn.onclick = async () => excluirVenda(v.id, card);
 
     actions.appendChild(statusBtn);
     actions.appendChild(delBtn);
@@ -310,49 +275,66 @@ function exibirVendas(vendas) {
     card.appendChild(actions);
     lista.appendChild(card);
 
-    if(v.pago) totalPago += valor * quantidade;
-    else totalNao += valor * quantidade;
+    if(v.pago) totalPago += total;
+    else totalNao += total;
   });
 
-  document.getElementById('totais').textContent = `Total Pago: R$ ${totalPago.toFixed(2)} | Total Não Pago: R$ ${totalNao.toFixed(2)}`;
+  document.getElementById('totais').textContent = 
+    `Total Pago: R$ ${totalPago.toFixed(2)} | Total Não Pago: R$ ${totalNao.toFixed(2)}`;
 }
 
 async function adicionarVenda() {
+  const btn = event.target;
+  btn.classList.add('loading');
   const cliente = document.getElementById('cliente').value.trim();
   const valor = parseFloat(document.getElementById('valor').value);
   const quantidade = parseInt(document.getElementById('quantidade').value) || 1;
   const data = document.getElementById('dataVenda').value;
 
-  if(!cliente || isNaN(valor)) return alert("Preencha os campos corretamente!");
+  if(!cliente || isNaN(valor)) { 
+    alert("Preencha os campos corretamente!");
+    btn.classList.remove('loading');
+    return;
+  }
 
-  const existente = todasVendas.find(v => v.cliente.toLowerCase() === cliente.toLowerCase());
-  if (existente) {
-    await fetchAPI({ action: "updateQuantidade", id: existente.id, valor: existente.valor + valor, quantidade: existente.quantidade + quantidade }, "POST");
+  const existente = cacheVendas.find(v => v.cliente.toLowerCase() === cliente.toLowerCase());
+  if(existente) {
+    existente.valor += valor;
+    existente.quantidade += quantidade;
+    await fetchAPI({ action: "update", id: existente.id, valor: existente.valor, quantidade: existente.quantidade }, "POST");
   } else {
     await fetchAPI({ action: "add", cliente, valor, quantidade, dataVenda: data }, "POST");
   }
 
-  carregarVendas();
+  await carregarVendas();
+  btn.classList.remove('loading');
 }
 
-async function togglePago(id, novoStatus) {
+async function togglePago(id, novoStatus, card) {
+  card.classList.add('loading');
   await fetchAPI({ action: "updateStatus", id, pago: novoStatus }, "POST");
-  carregarVendas();
+  await carregarVendas();
 }
 
-async function excluirVenda(id) {
+async function excluirVenda(id, card) {
   if(!confirm("Deseja realmente excluir esta venda?")) return;
+  card.classList.add('loading');
   await fetchAPI({ action: "delete", id }, "POST");
-  carregarVendas();
+  cacheVendas = cacheVendas.filter(v => v.id !== id);
+  exibirVendas(cacheVendas);
 }
 
-function filtrar(pagoStatus) {
-  const cards = document.querySelectorAll(".card");
-  cards.forEach(card => {
-    const statusBtn = card.querySelector(".status-btn");
-    if(statusBtn.textContent === "PAGO") card.style.display = pagoStatus ? "flex" : "none";
-    else card.style.display = pagoStatus === false ? "flex" : "none";
-  });
+function filtrar(tipo) {
+  let filtradas = cacheVendas;
+  if(tipo === "pago") filtradas = cacheVendas.filter(v => v.pago);
+  else if(tipo === "nao") filtradas = cacheVendas.filter(v => !v.pago);
+  exibirVendas(filtradas);
+}
+
+async function sincronizar() {
+  document.body.classList.add('loading');
+  await carregarVendas();
+  document.body.classList.remove('loading');
 }
 
 carregarVendas();
