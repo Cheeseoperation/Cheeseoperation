@@ -6,16 +6,14 @@
 <title>Painel de Vendas</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg:#000; --panel:#111; --text:#fff; --green:#00b894; --red:#d63031;
-}
+:root{--bg:#000;--panel:#111;--text:#fff;--green:#00b894;--red:#d63031;}
 *{box-sizing:border-box;font-family:"Poppins",sans-serif;}
 body{margin:0;background:var(--bg);color:var(--text);}
-header{background:#000;color:white;text-align:center;padding:18px;font-size:1.4rem;position:fixed;top:0;width:100%;z-index:1000;border-bottom-left-radius:25px;border-bottom-right-radius:25px;box-shadow:0 2px 8px rgba(0,0,0,0.5);}
+header{background:#000;color:white;text-align:center;padding:18px;font-size:1.4rem;position:fixed;top:0;width:100%;z-index:1000;border-bottom-left-radius:25px;border-bottom-right-radius:25px;box-shadow:0 2px 8px rgba(0,0,0,.5);}
 #topButtons{position:fixed;top:18px;right:18px;display:flex;gap:10px;z-index:1100;}
 .top-btn{background:#111;color:white;border:none;font-size:1.2rem;padding:10px 14px;border-radius:50%;cursor:pointer;transition:.3s;}
 .top-btn:hover{background:#222;}
-#sidebar{position:fixed;top:0;left:0;width:260px;height:100%;background:#000;transform:translateX(-270px);transition:all .3s ease;padding:20px;border-top-right-radius:25px;border-bottom-right-radius:25px;box-shadow:3px 0 10px rgba(0,0,0,0.6);z-index:1001;}
+#sidebar{position:fixed;top:0;left:0;width:260px;height:100%;background:#000;transform:translateX(-270px);transition:all .3s ease;padding:20px;border-top-right-radius:25px;border-bottom-right-radius:25px;box-shadow:3px 0 10px rgba(0,0,0,.6);z-index:1001;}
 #sidebar.open{transform:translateX(0);}
 .menu-item{padding:14px 18px;margin-bottom:10px;border-radius:18px;background:rgba(255,255,255,.05);cursor:pointer;transition:.2s;text-align:center;}
 .menu-item:hover{background:#222;}
@@ -45,7 +43,7 @@ button:hover{background:#222;}
 
 <div id="topButtons">
   <button class="top-btn" id="hamburgerBtn">&#9776;</button>
-  <button class="top-btn" onclick="sincronizar()">⟳</button>
+  <button class="top-btn" onclick="carregarVendas()">⟳</button>
 </div>
 
 <aside id="sidebar">
@@ -69,7 +67,7 @@ button:hover{background:#222;}
 </main>
 
 <script>
-const API_URL="https://script.google.com/macros/s/AKfycbzWn0jHpbxIUGdAkKaKlOkSk7pYeDf_2gkNs4_d1MF5RsKCujz1dYA2gP42VP9CjjZFzg/exec";
+const API_URL="https://script.google.com/macros/s/AKfycbwgIvldXl7KVcRI4QVP4wdcsijRDRv2Ffv-gSLBpTw3H1CzMgjTqdjal2eoD_wWLelEpw/exec";
 const sidebar=document.getElementById('sidebar');
 const hamburgerBtn=document.getElementById('hamburgerBtn');
 const dataVenda=document.getElementById('dataVenda');
@@ -82,30 +80,23 @@ dataVenda.value=new Date().toISOString().split('T')[0];
 async function fetchAPI(params={}){try{const res=await fetch(API_URL,{method:"POST",body:JSON.stringify(params)});return await res.json();}catch{return[];}}
 
 async function carregarVendas(){
+  document.body.classList.add('loading');
   const vendas=await fetchAPI();
-  if(!Array.isArray(vendas)) cacheVendas=[];
-  else cacheVendas=vendas.sort((a,b)=>a.cliente.localeCompare(b.cliente));
-
-  // filtrar últimos 6 meses
-  const hoje=new Date();
-  const seisMesesAtras=new Date(hoje.getFullYear(),hoje.getMonth()-5,1);
-  cacheVendas=cacheVendas.filter(v=>new Date(v.dataVenda)>=seisMesesAtras);
-
+  cacheVendas=Array.isArray(vendas)?vendas.sort((a,b)=>a.cliente.localeCompare(b.cliente)):[];
   atualizarMenuMeses();
   exibirVendas(cacheVendas);
+  document.body.classList.remove('loading');
 }
 
-function atualizarMenuMeses() {
-  const mesesMenu = document.getElementById("mesesMenu");
-  mesesMenu.innerHTML = "";
-  const meses = {};
-
-  cacheVendas.forEach(v => {
-    const dateObj = new Date(v.dataVenda);
-    const monthName = dateObj.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
-    meses[monthName] = true;
+function atualizarMenuMeses(){
+  const mesesMenu=document.getElementById("mesesMenu");
+  mesesMenu.innerHTML="";
+  const meses={};
+  cacheVendas.forEach(v=>{
+    const dateObj=new Date(v.dataVenda);
+    const monthName=dateObj.toLocaleString('pt-BR',{month:'long',year:'numeric'});
+    meses[monthName]=true;
   });
-
   Object.keys(meses).sort((a,b)=>new Date(a)-new Date(b)).forEach(mes=>{
     const div=document.createElement("div");
     div.className="menu-item";
@@ -115,72 +106,127 @@ function atualizarMenuMeses() {
   });
 }
 
-function filtrarMes(mesNome){
-  const filtradas = cacheVendas.filter(v=>{
-    const dateObj = new Date(v.dataVenda);
-    const monthName = dateObj.toLocaleString('pt-BR',{ month:'long', year:'numeric'});
-    return monthName === mesNome;
-  });
-  exibirVendas(filtradas);
-}
-
 function exibirVendas(vendas){
   const lista=document.getElementById('listaVendas');
   lista.innerHTML="";
-  const meses={};
   let totalPago=0,totalNao=0;
-
+  const vendasPorMes={};
   vendas.forEach(v=>{
     const dateObj=new Date(v.dataVenda);
     const monthName=dateObj.toLocaleString('pt-BR',{month:'long',year:'numeric'});
-    if(!meses[monthName]) meses[monthName]=[];
-    meses[monthName].push(v);
-    const total=(parseFloat(v.valor)*parseInt(v.quantidade||1))||0;
-    if(v.pago) totalPago+=total; else totalNao+=total;
+    if(!vendasPorMes[monthName]) vendasPorMes[monthName]=[];
+    vendasPorMes[monthName].push(v);
   });
 
-  for(const [month,vendasMes] of Object.entries(meses)){
-    const monthDiv=document.createElement('div'); monthDiv.className="month-group";
-    const monthTitle=document.createElement('div'); monthTitle.className="month-title"; monthTitle.textContent=month;
-    monthDiv.appendChild(monthTitle);
+  Object.keys(vendasPorMes).forEach(mes=>{
+    const monthDiv=document.createElement("div");
+    monthDiv.className="month-group";
+    const title=document.createElement("div");
+    title.className="month-title";
+    title.textContent=mes;
+    monthDiv.appendChild(title);
 
-    vendasMes.forEach(v=>{
-      const card=document.createElement('div'); card.className="card";
-      const info=document.createElement('div'); info.className="info";
-      const total=(parseFloat(v.valor)*parseInt(v.quantidade||1))||0;
-      info.innerHTML=`<strong>${v.cliente}</strong><br>Valor: R$ ${parseFloat(v.valor).toFixed(2)}<br>Qtd: ${v.quantidade} | Total: R$ ${total.toFixed(2)}<br>Data: ${v.dataVenda}`;
+    vendasPorMes[mes].forEach(v=>{
+      const card=document.createElement("div");
+      card.className="card";
+      card.dataset.id=v.id;
 
-      const actions=document.createElement('div'); actions.className="actions";
-      const statusBtn=document.createElement('button'); statusBtn.className="status-btn "+(v.pago?"pago":"nao");
-      statusBtn.textContent=v.pago?"PAGO":"NÃO PAGO"; statusBtn.onclick=()=>togglePago(v.id, !v.pago, card);
-      const delBtn=document.createElement('button'); delBtn.className="delete-btn"; delBtn.textContent="EXCLUIR";
-      delBtn.onclick=()=>excluirVenda(v.id, card);
+      const info=document.createElement("div");
+      info.className="info";
+      info.innerHTML=`<strong>${v.cliente}</strong><br>Valor: R$ ${v.valor.toFixed(2)}<br>Qtd: ${v.quantidade} | Total: R$ ${(v.valor*v.quantidade).toFixed(2)}<br>Data: ${v.dataVenda}`;
 
-      actions.appendChild(statusBtn); actions.appendChild(delBtn);
-      card.appendChild(info); card.appendChild(actions);
+      const actions=document.createElement("div");
+      actions.className="actions";
+
+      const statusBtn=document.createElement("button");
+      statusBtn.className="status-btn "+(v.pago?"pago":"nao");
+      statusBtn.textContent=v.pago?"PAGO":"NÃO PAGO";
+      statusBtn.onclick=()=>updateStatusCard(v.id,statusBtn);
+
+      const delBtn=document.createElement("button");
+      delBtn.className="delete-btn";
+      delBtn.textContent="EXCLUIR";
+      delBtn.onclick=()=>deleteCard(v.id,card);
+
+      actions.appendChild(statusBtn);
+      actions.appendChild(delBtn);
+      card.appendChild(info);
+      card.appendChild(actions);
       monthDiv.appendChild(card);
+
+      if(v.pago) totalPago+=v.valor*v.quantidade;
+      else totalNao+=v.valor*v.quantidade;
     });
+
     lista.appendChild(monthDiv);
-  }
+  });
 
   document.getElementById('totais').textContent=`Total Pago: R$ ${totalPago.toFixed(2)} | Total Não Pago: R$ ${totalNao.toFixed(2)}`;
 }
 
+// ATUALIZA STATUS RAPIDAMENTE
+async function updateStatusCard(id,btn){
+  btn.disabled=true;
+  const novoStatus=btn.textContent==="NÃO PAGO";
+  const res=await fetchAPI({id,pago:novoStatus});
+  if(res.success){
+    btn.textContent=novoStatus?"PAGO":"NÃO PAGO";
+    btn.className="status-btn "+(novoStatus?"pago":"nao");
+    // Atualiza totais sem recarregar
+    const card=document.querySelector(`.card[data-id='${id}']`);
+    const totalPagoEl=document.getElementById('totais');
+    recalcTotais();
+  }
+  btn.disabled=false;
+}
+
+// DELETA CARD RAPIDAMENTE
+async function deleteCard(id,card){
+  if(!confirm("Deseja realmente excluir esta venda?")) return;
+  const res=await fetchAPI({acao:"excluir",id});
+  if(res.success){
+    card.remove();
+    cacheVendas=cacheVendas.filter(v=>v.id!==id);
+    recalcTotais();
+  }
+}
+
+function recalcTotais(){
+  let totalPago=0,totalNao=0;
+  cacheVendas.forEach(v=>{
+    if(v.pago) totalPago+=v.valor*v.quantidade;
+    else totalNao+=v.valor*v.quantidade;
+  });
+  document.getElementById('totais').textContent=`Total Pago: R$ ${totalPago.toFixed(2)} | Total Não Pago: R$ ${totalNao.toFixed(2)}`;
+}
+
 async function adicionarVenda(){
-  const btn=event.target; btn.classList.add('loading');
   const cliente=document.getElementById('cliente').value.trim();
   const valor=parseFloat(document.getElementById('valor').value);
   const quantidade=parseInt(document.getElementById('quantidade').value)||1;
   const data=document.getElementById('dataVenda').value;
-  if(!cliente||isNaN(valor)){alert("Preencha os campos corretamente!");btn.classList.remove('loading');return;}
-  await fetchAPI({acao:"adicionar",cliente,valor,quantidade,dataVenda:data});
-  await carregarVendas(); btn.classList.remove('loading');
+  if(!cliente||isNaN(valor)) return alert("Preencha os campos corretamente!");
+  const res=await fetchAPI({acao:"adicionar",cliente,valor,quantidade,dataVenda:data});
+  if(res.success) carregarVendas();
 }
 
-async function togglePago(id,novoStatus,card){card.classList.add('loading'); await fetchAPI({id,pago:novoStatus}); await carregarVendas();}
-async function excluirVenda(id,card){if(!confirm("Deseja realmente excluir esta venda?"))return; card.classList.add('loading'); await fetchAPI({acao:"excluir",id}); cacheVendas=cacheVendas.filter(v=>v.id!==id); exibirVendas(cacheVendas);}
-function filtrar(tipo){let filtradas=cacheVendas;if(tipo==="pago") filtradas=cacheVendas.filter(v=>v.pago); else if(tipo==="nao") filtradas=cacheVendas.filter(v=>!v.pago); exibirVendas(filtradas);}
-async function sincronizar(){document.body.classList.add('loading'); await carregarVendas(); document.body.classList.remove('loading');}
+function filtrar(status){
+  const cards=document.querySelectorAll(".card");
+  cards.forEach(card=>{
+    const btn=card.querySelector(".status-btn");
+    if(status==="todas") card.style.display="flex";
+    else if(status==="pago") card.style.display=btn.textContent==="PAGO"?"flex":"none";
+    else if(status==="nao") card.style.display=btn.textContent==="NÃO PAGO"?"flex":"none";
+  });
+}
+
+function filtrarMes(mes){
+  const groups=document.querySelectorAll(".month-group");
+  groups.forEach(g=>{
+    const title=g.querySelector(".month-title").textContent;
+    g.style.display=title===mes?"block":"none";
+  });
+}
 
 carregarVendas();
 </script>
