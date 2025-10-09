@@ -7,12 +7,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0a0a;
+    --bg: #000;
     --panel: #111;
     --text: #fff;
     --green: #00b894;
     --red: #d63031;
-    --accent: #1e1e1e;
+    --accent: #222;
   }
 
   * { box-sizing: border-box; font-family: "Poppins", sans-serif; }
@@ -38,17 +38,31 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.5);
   }
 
-  #hamburgerBtn {
+  #topButtons {
     position: fixed;
-    top: 18px;
-    left: 18px;
-    font-size: 1.8rem;
-    background: none;
+    top: 14px;
+    right: 18px;
+    display: flex;
+    gap: 10px;
+    z-index: 1100;
+  }
+
+  .top-btn {
+    font-size: 1.2rem;
+    background: var(--accent);
     border: none;
     color: white;
     cursor: pointer;
-    z-index: 1100;
+    border-radius: 50%;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s;
   }
+
+  .top-btn:hover { background: #333; }
 
   #sidebar {
     position: fixed;
@@ -65,6 +79,7 @@
     box-shadow: 3px 0 10px rgba(0,0,0,0.6);
     z-index: 1001;
   }
+
   #sidebar.open { transform: translateX(0); }
 
   .menu-item {
@@ -76,7 +91,8 @@
     transition: 0.2s;
     text-align: center;
   }
-  .menu-item:hover { background: #1f1f1f; }
+
+  .menu-item:hover { background: #222; }
 
   main {
     margin-top: 100px;
@@ -89,24 +105,26 @@
     gap: 10px;
     margin-bottom: 20px;
   }
-  input, button {
+
+  input, button, select {
     padding: 14px;
     border-radius: 20px;
     border: none;
     font-size: 1rem;
     outline: none;
   }
-  input { background: #1c1c1c; color: white; }
+
+  input, select { background: #222; color: white; }
   input::placeholder { color: #aaa; }
 
   button {
-    background: #181818;
+    background: #000;
     color: white;
     font-weight: 600;
     cursor: pointer;
     transition: 0.3s;
-    border: 1px solid #333;
   }
+
   button:hover { background: #222; }
 
   .card {
@@ -119,27 +137,26 @@
     flex-wrap: wrap;
     align-items: center;
     box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-    transition: transform 0.2s ease;
   }
-  .card:hover { transform: scale(1.01); }
 
   .info { font-size: 0.9rem; flex: 1 1 180px; }
+
   .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 
   .status-btn, .delete-btn {
     border-radius: 18px;
     padding: 10px 16px;
     font-weight: 600;
-    border: none;
+    border: 1px solid #333;
+    background: #000;
     cursor: pointer;
     flex: 1 1 100px;
     text-align: center;
-    transition: 0.3s;
   }
-  .status-btn.pago { background: rgba(0,184,148,0.1); color: var(--green); border: 1px solid var(--green); }
-  .status-btn.nao { background: rgba(214,48,49,0.1); color: var(--red); border: 1px solid var(--red); }
-  .delete-btn { background: rgba(255,255,255,0.05); color: #ccc; border: 1px solid #444; }
-  .delete-btn:hover { background: #222; }
+
+  .status-btn.pago { color: var(--green); }
+  .status-btn.nao { color: var(--red); }
+  .status-btn:hover, .delete-btn:hover { background: #111; }
 
   .totals {
     text-align: center;
@@ -150,11 +167,17 @@
     padding: 14px;
   }
 
-  .loader {
+  #mesFiltroContainer {
     text-align: center;
-    padding: 20px;
-    color: #888;
-    font-size: 0.95rem;
+    margin-bottom: 20px;
+  }
+
+  #mesFiltro {
+    background: #222;
+    border-radius: 18px;
+    padding: 10px;
+    color: white;
+    font-weight: 600;
   }
 
   @media (max-width: 480px) {
@@ -165,7 +188,11 @@
 </head>
 <body>
 <header>Painel de Vendas</header>
-<button id="hamburgerBtn">&#9776;</button>
+
+<div id="topButtons">
+  <button id="hamburgerBtn" class="top-btn">&#9776;</button>
+  <button id="syncBtn" class="top-btn" title="Sincronizar">&#x21bb;</button>
+</div>
 
 <aside id="sidebar">
   <div class="menu-item" onclick="carregarVendas()">Todas</div>
@@ -182,6 +209,10 @@
     <button onclick="adicionarVenda()">Adicionar</button>
   </section>
 
+  <div id="mesFiltroContainer">
+    <select id="mesFiltro" onchange="filtrarMes()"></select>
+  </div>
+
   <div id="listaVendas"></div>
   <div class="totals" id="totais">Total Pago: R$ 0,00 | Total Não Pago: R$ 0,00</div>
 </main>
@@ -191,59 +222,72 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwbGpkzdk-uowBk1Mg3LKUn
 
 const sidebar = document.getElementById('sidebar');
 const hamburgerBtn = document.getElementById('hamburgerBtn');
+const syncBtn = document.getElementById('syncBtn');
 const dataVenda = document.getElementById('dataVenda');
-const lista = document.getElementById('listaVendas');
+const mesFiltro = document.getElementById('mesFiltro');
 
 hamburgerBtn.addEventListener('click', e => { e.stopPropagation(); sidebar.classList.toggle('open'); });
 document.addEventListener('click', e => { if(!sidebar.contains(e.target) && !hamburgerBtn.contains(e.target)) sidebar.classList.remove('open'); });
+syncBtn.addEventListener('click', carregarVendas);
 
 dataVenda.value = new Date().toISOString().split('T')[0];
 
-async function fetchAPI(params = {}, method = "GET", timeout = 8000) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeout);
+let todasVendas = [];
 
+async function fetchAPI(params = {}, method = "GET") {
   const url = method === "GET" ? API_URL + "?" + new URLSearchParams(params) : API_URL;
-  const options = method === "POST"
-    ? { method: "POST", body: JSON.stringify(params), signal: controller.signal }
-    : { signal: controller.signal };
-
-  try {
-    const res = await fetch(url, options);
-    clearTimeout(timer);
-    if (!res.ok) throw new Error("Erro na requisição");
-    return await res.json();
-  } catch (err) {
-    console.error(err);
-    alert("Erro ao carregar dados. Verifique sua conexão ou tente novamente.");
-    return [];
-  }
+  const options = method === "POST" ? { method: "POST", body: JSON.stringify(params) } : {};
+  const res = await fetch(url, options);
+  return await res.json();
 }
 
 async function carregarVendas() {
-  lista.innerHTML = `<div class="loader">Carregando dados...</div>`;
-  const vendas = await fetchAPI({ action: "get" });
-  exibirVendas(vendas);
+  try {
+    const vendas = await fetchAPI({ action: "get" });
+    todasVendas = vendas.sort((a, b) => a.cliente.localeCompare(b.cliente));
+    preencherFiltroMes();
+    filtrarMes();
+  } catch (e) {
+    alert("Erro ao carregar dados. Verifique sua conexão e tente novamente.");
+  }
 }
 
-function exibirVendas(vendas = []) {
-  lista.innerHTML = "";
-  if (!vendas.length) {
-    lista.innerHTML = `<div class="loader">Nenhuma venda encontrada.</div>`;
-    return;
-  }
+function preencherFiltroMes() {
+  const meses = [...new Set(todasVendas.map(v => v.dataVenda.slice(0, 7)))];
+  mesFiltro.innerHTML = meses.map(m => {
+    const [ano, mes] = m.split("-");
+    return `<option value="${m}">${mesNome(mes)}/${ano}</option>`;
+  }).join("");
+}
 
+function mesNome(m) {
+  const nomes = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+  return nomes[parseInt(m)-1];
+}
+
+function filtrarMes() {
+  const mesSelecionado = mesFiltro.value;
+  const vendasFiltradas = todasVendas.filter(v => v.dataVenda.startsWith(mesSelecionado));
+  exibirVendas(vendasFiltradas);
+}
+
+function exibirVendas(vendas) {
+  const lista = document.getElementById('listaVendas');
+  lista.innerHTML = "";
   let totalPago = 0, totalNao = 0;
 
   vendas.forEach(v => {
+    const valor = parseFloat(v.valor) || 0;
+    const quantidade = parseInt(v.quantidade) || 1;
+
     const card = document.createElement('div');
     card.className = "card";
 
     const info = document.createElement('div');
     info.className = "info";
     info.innerHTML = `<strong>${v.cliente}</strong><br>
-                      Valor: R$ ${v.valor.toFixed(2)}<br>
-                      Qtd: ${v.quantidade} | Total: R$ ${(v.valor * v.quantidade).toFixed(2)}<br>
+                      Valor: R$ ${valor.toFixed(2)}<br>
+                      Qtd: ${quantidade} | Total: R$ ${(valor * quantidade).toFixed(2)}<br>
                       Data: ${v.dataVenda}`;
 
     const actions = document.createElement('div');
@@ -266,12 +310,11 @@ function exibirVendas(vendas = []) {
     card.appendChild(actions);
     lista.appendChild(card);
 
-    if(v.pago) totalPago += v.valor * v.quantidade;
-    else totalNao += v.valor * v.quantidade;
+    if(v.pago) totalPago += valor * quantidade;
+    else totalNao += valor * quantidade;
   });
 
-  document.getElementById('totais').textContent = 
-    `Total Pago: R$ ${totalPago.toFixed(2)} | Total Não Pago: R$ ${totalNao.toFixed(2)}`;
+  document.getElementById('totais').textContent = `Total Pago: R$ ${totalPago.toFixed(2)} | Total Não Pago: R$ ${totalNao.toFixed(2)}`;
 }
 
 async function adicionarVenda() {
@@ -282,28 +325,34 @@ async function adicionarVenda() {
 
   if(!cliente || isNaN(valor)) return alert("Preencha os campos corretamente!");
 
-  lista.innerHTML = `<div class="loader">Adicionando venda...</div>`;
-  await fetchAPI({ action: "add", cliente, valor, quantidade, dataVenda: data }, "POST");
+  const existente = todasVendas.find(v => v.cliente.toLowerCase() === cliente.toLowerCase());
+  if (existente) {
+    await fetchAPI({ action: "updateQuantidade", id: existente.id, valor: existente.valor + valor, quantidade: existente.quantidade + quantidade }, "POST");
+  } else {
+    await fetchAPI({ action: "add", cliente, valor, quantidade, dataVenda: data }, "POST");
+  }
+
   carregarVendas();
 }
 
 async function togglePago(id, novoStatus) {
-  lista.innerHTML = `<div class="loader">Atualizando status...</div>`;
   await fetchAPI({ action: "updateStatus", id, pago: novoStatus }, "POST");
   carregarVendas();
 }
 
 async function excluirVenda(id) {
   if(!confirm("Deseja realmente excluir esta venda?")) return;
-  lista.innerHTML = `<div class="loader">Excluindo venda...</div>`;
   await fetchAPI({ action: "delete", id }, "POST");
   carregarVendas();
 }
 
-async function filtrar(pagoStatus) {
-  const vendas = await fetchAPI({ action: "get" });
-  const filtradas = vendas.filter(v => v.pago === pagoStatus);
-  exibirVendas(filtradas);
+function filtrar(pagoStatus) {
+  const cards = document.querySelectorAll(".card");
+  cards.forEach(card => {
+    const statusBtn = card.querySelector(".status-btn");
+    if(statusBtn.textContent === "PAGO") card.style.display = pagoStatus ? "flex" : "none";
+    else card.style.display = pagoStatus === false ? "flex" : "none";
+  });
 }
 
 carregarVendas();
