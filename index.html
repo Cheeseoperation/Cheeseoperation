@@ -16,11 +16,7 @@
 
   * { box-sizing: border-box; font-family: "Poppins", sans-serif; }
 
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-  }
+  body { margin:0; background: var(--bg); color: var(--text); }
 
   header {
     background: #000;
@@ -37,7 +33,6 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.5);
   }
 
-  /* Botões do topo */
   #topButtons {
     position: fixed;
     top: 18px;
@@ -57,10 +52,7 @@
     cursor: pointer;
     transition: 0.3s;
   }
-
-  .top-btn:hover {
-    background: #222;
-  }
+  .top-btn:hover { background: #222; }
 
   #sidebar {
     position: fixed;
@@ -77,7 +69,6 @@
     box-shadow: 3px 0 10px rgba(0,0,0,0.6);
     z-index: 1001;
   }
-
   #sidebar.open { transform: translateX(0); }
 
   .menu-item {
@@ -89,13 +80,9 @@
     transition: 0.2s;
     text-align: center;
   }
-
   .menu-item:hover { background: #222; }
 
-  main {
-    margin-top: 100px;
-    padding: 16px;
-  }
+  main { margin-top: 100px; padding: 16px; }
 
   .form {
     display: grid;
@@ -111,7 +98,6 @@
     font-size: 1rem;
     outline: none;
   }
-
   input { background: #222; color: white; }
   input::placeholder { color: #aaa; }
 
@@ -122,7 +108,6 @@
     cursor: pointer;
     transition: 0.3s;
   }
-
   button:hover { background: #222; }
 
   .card {
@@ -151,7 +136,6 @@
     text-align: center;
     transition: 0.3s;
   }
-
   .status-btn.pago { color: var(--green); }
   .status-btn.nao { color: var(--red); }
   .status-btn:hover, .delete-btn:hover { background: #111; }
@@ -165,10 +149,17 @@
     padding: 14px;
   }
 
-  .loading {
-    opacity: 0.6;
-    pointer-events: none;
+  .month-group {
+    margin-top: 20px;
   }
+  .month-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    text-align: left;
+  }
+
+  .loading { opacity: 0.6; pointer-events: none; }
 
   @media (max-width: 480px) {
     .form { grid-template-columns: 1fr; }
@@ -220,11 +211,9 @@ document.addEventListener('click', e => {
 });
 dataVenda.value = new Date().toISOString().split('T')[0];
 
-async function fetchAPI(params = {}, method = "GET") {
+async function fetchAPI(params = {}, method = "POST") {
   try {
-    const url = method === "GET" ? API_URL + "?" + new URLSearchParams(params) : API_URL;
-    const options = method === "POST" ? { method: "POST", body: JSON.stringify(params) } : {};
-    const res = await fetch(url, options);
+    const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(params) });
     return await res.json();
   } catch {
     alert("Erro ao carregar dados. Verifique sua conexão.");
@@ -233,7 +222,7 @@ async function fetchAPI(params = {}, method = "GET") {
 }
 
 async function carregarVendas() {
-  const vendas = await fetchAPI({ action: "get" });
+  const vendas = await fetchAPI({}); // GET todas
   cacheVendas = Array.isArray(vendas) ? vendas.sort((a,b)=>a.cliente.localeCompare(b.cliente)) : [];
   exibirVendas(cacheVendas);
 }
@@ -241,43 +230,66 @@ async function carregarVendas() {
 function exibirVendas(vendas) {
   const lista = document.getElementById('listaVendas');
   lista.innerHTML = "";
+
+  const meses = {};
+
   let totalPago = 0, totalNao = 0;
 
   vendas.forEach(v => {
-    const card = document.createElement('div');
-    card.className = "card";
+    const dateObj = new Date(v.dataVenda);
+    const monthName = dateObj.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
 
-    const info = document.createElement('div');
-    info.className = "info";
+    if(!meses[monthName]) meses[monthName] = [];
+    meses[monthName].push(v);
+
     const total = (parseFloat(v.valor) * parseInt(v.quantidade || 1)) || 0;
-    info.innerHTML = `<strong>${v.cliente}</strong><br>
-                      Valor: R$ ${parseFloat(v.valor).toFixed(2)}<br>
-                      Qtd: ${v.quantidade} | Total: R$ ${total.toFixed(2)}<br>
-                      Data: ${v.dataVenda}`;
-
-    const actions = document.createElement('div');
-    actions.className = "actions";
-
-    const statusBtn = document.createElement('button');
-    statusBtn.className = "status-btn " + (v.pago ? "pago" : "nao");
-    statusBtn.textContent = v.pago ? "PAGO" : "NÃO PAGO";
-    statusBtn.onclick = async () => togglePago(v.id, !v.pago, card);
-
-    const delBtn = document.createElement('button');
-    delBtn.className = "delete-btn";
-    delBtn.textContent = "EXCLUIR";
-    delBtn.onclick = async () => excluirVenda(v.id, card);
-
-    actions.appendChild(statusBtn);
-    actions.appendChild(delBtn);
-
-    card.appendChild(info);
-    card.appendChild(actions);
-    lista.appendChild(card);
-
     if(v.pago) totalPago += total;
     else totalNao += total;
   });
+
+  for(const [month, vendasMes] of Object.entries(meses)) {
+    const monthDiv = document.createElement('div');
+    monthDiv.className = "month-group";
+    const monthTitle = document.createElement('div');
+    monthTitle.className = "month-title";
+    monthTitle.textContent = month;
+    monthDiv.appendChild(monthTitle);
+
+    vendasMes.forEach(v => {
+      const card = document.createElement('div');
+      card.className = "card";
+
+      const info = document.createElement('div');
+      info.className = "info";
+      const total = (parseFloat(v.valor) * parseInt(v.quantidade || 1)) || 0;
+      info.innerHTML = `<strong>${v.cliente}</strong><br>
+                        Valor: R$ ${parseFloat(v.valor).toFixed(2)}<br>
+                        Qtd: ${v.quantidade} | Total: R$ ${total.toFixed(2)}<br>
+                        Data: ${v.dataVenda}`;
+
+      const actions = document.createElement('div');
+      actions.className = "actions";
+
+      const statusBtn = document.createElement('button');
+      statusBtn.className = "status-btn " + (v.pago ? "pago" : "nao");
+      statusBtn.textContent = v.pago ? "PAGO" : "NÃO PAGO";
+      statusBtn.onclick = async () => togglePago(v.id, !v.pago, card);
+
+      const delBtn = document.createElement('button');
+      delBtn.className = "delete-btn";
+      delBtn.textContent = "EXCLUIR";
+      delBtn.onclick = async () => excluirVenda(v.id, card);
+
+      actions.appendChild(statusBtn);
+      actions.appendChild(delBtn);
+
+      card.appendChild(info);
+      card.appendChild(actions);
+      monthDiv.appendChild(card);
+    });
+
+    lista.appendChild(monthDiv);
+  }
 
   document.getElementById('totais').textContent = 
     `Total Pago: R$ ${totalPago.toFixed(2)} | Total Não Pago: R$ ${totalNao.toFixed(2)}`;
@@ -297,29 +309,21 @@ async function adicionarVenda() {
     return;
   }
 
-  const existente = cacheVendas.find(v => v.cliente.toLowerCase() === cliente.toLowerCase());
-  if(existente) {
-    existente.valor += valor;
-    existente.quantidade += quantidade;
-    await fetchAPI({ action: "update", id: existente.id, valor: existente.valor, quantidade: existente.quantidade }, "POST");
-  } else {
-    await fetchAPI({ action: "add", cliente, valor, quantidade, dataVenda: data }, "POST");
-  }
-
+  await fetchAPI({ acao: "adicionar", cliente, valor, quantidade, dataVenda: data });
   await carregarVendas();
   btn.classList.remove('loading');
 }
 
 async function togglePago(id, novoStatus, card) {
   card.classList.add('loading');
-  await fetchAPI({ action: "updateStatus", id, pago: novoStatus }, "POST");
+  await fetchAPI({ id, pago: novoStatus });
   await carregarVendas();
 }
 
 async function excluirVenda(id, card) {
   if(!confirm("Deseja realmente excluir esta venda?")) return;
   card.classList.add('loading');
-  await fetchAPI({ action: "delete", id }, "POST");
+  await fetchAPI({ acao: "excluir", id });
   cacheVendas = cacheVendas.filter(v => v.id !== id);
   exibirVendas(cacheVendas);
 }
@@ -339,5 +343,6 @@ async function sincronizar() {
 
 carregarVendas();
 </script>
+
 </body>
 </html>
