@@ -43,7 +43,7 @@ button:hover{background:#222;}
 
 <div id="topButtons">
   <button class="top-btn" id="hamburgerBtn">&#9776;</button>
-  <button class="top-btn" onclick="carregarVendas()">⟳</button>
+  <button class="top-btn" id="syncBtn">⟳</button>
 </div>
 
 <aside id="sidebar">
@@ -55,6 +55,7 @@ button:hover{background:#222;}
 
 <main>
   <section class="form">
+    <input id="search" placeholder="Pesquisar cliente..." oninput="pesquisarCliente()" style="grid-column:1/-1;">
     <input id="cliente" placeholder="Nome do cliente">
     <input id="valor" type="number" step="0.01" placeholder="Valor (R$)">
     <input id="quantidade" type="number" min="1" value="1" placeholder="Qtd">
@@ -70,14 +71,75 @@ button:hover{background:#222;}
 const API_URL="https://script.google.com/macros/s/AKfycbwgIvldXl7KVcRI4QVP4wdcsijRDRv2Ffv-gSLBpTw3H1CzMgjTqdjal2eoD_wWLelEpw/exec";
 const sidebar=document.getElementById('sidebar');
 const hamburgerBtn=document.getElementById('hamburgerBtn');
+const syncBtn=document.getElementById('syncBtn');
 const dataVenda=document.getElementById('dataVenda');
 let cacheVendas=[];
 
 hamburgerBtn.addEventListener('click',e=>{e.stopPropagation();sidebar.classList.toggle('open');});
 document.addEventListener('click',e=>{if(!sidebar.contains(e.target)&&!hamburgerBtn.contains(e.target))sidebar.classList.remove('open');});
+syncBtn.addEventListener('click',()=>carregarVendas());
 dataVenda.value=new Date().toISOString().split('T')[0];
 
 async function fetchAPI(params={}){try{const res=await fetch(API_URL,{method:"POST",body:JSON.stringify(params)});return await res.json();}catch{return[];}}
+
+function exibirVendas(vendas){
+  const lista=document.getElementById('listaVendas');
+  lista.innerHTML="";
+  let totalPago=0,totalNao=0;
+  const vendasPorMes={};
+
+  vendas.forEach(v=>{
+    const dateObj=new Date(v.dataVenda);
+    const monthName=dateObj.toLocaleString('pt-BR',{month:'long',year:'numeric'});
+    if(!vendasPorMes[monthName]) vendasPorMes[monthName]=[];
+    vendasPorMes[monthName].push(v);
+  });
+
+  Object.keys(vendasPorMes).sort((a,b)=>new Date(a)-new Date(b)).forEach(mes=>{
+    const monthDiv=document.createElement("div");
+    monthDiv.className="month-group";
+    const title=document.createElement("div");
+    title.className="month-title";
+    title.textContent=mes;
+    monthDiv.appendChild(title);
+
+    vendasPorMes[mes].forEach(v=>{
+      const card=document.createElement("div");
+      card.className="card";
+      card.dataset.id=v.id;
+
+      const info=document.createElement("div");
+      info.className="info";
+      info.innerHTML=`<strong>${v.cliente}</strong><br>Valor: R$ ${v.valor.toFixed(2)}<br>Qtd: ${v.quantidade} | Total: R$ ${(v.valor*v.quantidade).toFixed(2)}<br>Data: ${v.dataVenda}`;
+
+      const actions=document.createElement("div");
+      actions.className="actions";
+
+      const statusBtn=document.createElement("button");
+      statusBtn.className="status-btn "+(v.pago?"pago":"nao");
+      statusBtn.textContent=v.pago?"PAGO":"NÃO PAGO";
+      statusBtn.onclick=()=>updateStatus(v.id,statusBtn);
+
+      const delBtn=document.createElement("button");
+      delBtn.className="delete-btn";
+      delBtn.textContent="EXCLUIR";
+      delBtn.onclick=()=>deleteVenda(v.id,card);
+
+      actions.appendChild(statusBtn);
+      actions.appendChild(delBtn);
+      card.appendChild(info);
+      card.appendChild(actions);
+      monthDiv.appendChild(card);
+
+      if(v.pago) totalPago+=v.valor*v.quantidade;
+      else totalNao+=v.valor*v.quantidade;
+    });
+
+    lista.appendChild(monthDiv);
+  });
+
+  document.getElementById('totais').textContent=`Total Pago: R$ ${totalPago.toFixed(2)} | Total Não Pago: R$ ${totalNao.toFixed(2)}`;
+}
 
 async function carregarVendas(){
   document.body.classList.add('loading');
@@ -106,128 +168,77 @@ function atualizarMenuMeses(){
   });
 }
 
-function exibirVendas(vendas){
-  const lista=document.getElementById('listaVendas');
-  lista.innerHTML="";
-  let totalPago=0,totalNao=0;
-  const vendasPorMes={};
-  vendas.forEach(v=>{
-    const dateObj=new Date(v.dataVenda);
-    const monthName=dateObj.toLocaleString('pt-BR',{month:'long',year:'numeric'});
-    if(!vendasPorMes[monthName]) vendasPorMes[monthName]=[];
-    vendasPorMes[monthName].push(v);
-  });
-
-  Object.keys(vendasPorMes).forEach(mes=>{
-    const monthDiv=document.createElement("div");
-    monthDiv.className="month-group";
-    const title=document.createElement("div");
-    title.className="month-title";
-    title.textContent=mes;
-    monthDiv.appendChild(title);
-
-    vendasPorMes[mes].forEach(v=>{
-      const card=document.createElement("div");
-      card.className="card";
-      card.dataset.id=v.id;
-
-      const info=document.createElement("div");
-      info.className="info";
-      info.innerHTML=`<strong>${v.cliente}</strong><br>Valor: R$ ${v.valor.toFixed(2)}<br>Qtd: ${v.quantidade} | Total: R$ ${(v.valor*v.quantidade).toFixed(2)}<br>Data: ${v.dataVenda}`;
-
-      const actions=document.createElement("div");
-      actions.className="actions";
-
-      const statusBtn=document.createElement("button");
-      statusBtn.className="status-btn "+(v.pago?"pago":"nao");
-      statusBtn.textContent=v.pago?"PAGO":"NÃO PAGO";
-      statusBtn.onclick=()=>updateStatusCard(v.id,statusBtn);
-
-      const delBtn=document.createElement("button");
-      delBtn.className="delete-btn";
-      delBtn.textContent="EXCLUIR";
-      delBtn.onclick=()=>deleteCard(v.id,card);
-
-      actions.appendChild(statusBtn);
-      actions.appendChild(delBtn);
-      card.appendChild(info);
-      card.appendChild(actions);
-      monthDiv.appendChild(card);
-
-      if(v.pago) totalPago+=v.valor*v.quantidade;
-      else totalNao+=v.valor*v.quantidade;
-    });
-
-    lista.appendChild(monthDiv);
-  });
-
-  document.getElementById('totais').textContent=`Total Pago: R$ ${totalPago.toFixed(2)} | Total Não Pago: R$ ${totalNao.toFixed(2)}`;
-}
-
-// ATUALIZA STATUS RAPIDAMENTE
-async function updateStatusCard(id,btn){
-  btn.disabled=true;
-  const novoStatus=btn.textContent==="NÃO PAGO";
-  const res=await fetchAPI({id,pago:novoStatus});
-  if(res.success){
-    btn.textContent=novoStatus?"PAGO":"NÃO PAGO";
-    btn.className="status-btn "+(novoStatus?"pago":"nao");
-    // Atualiza totais sem recarregar
-    const card=document.querySelector(`.card[data-id='${id}']`);
-    const totalPagoEl=document.getElementById('totais');
-    recalcTotais();
-  }
-  btn.disabled=false;
-}
-
-// DELETA CARD RAPIDAMENTE
-async function deleteCard(id,card){
-  if(!confirm("Deseja realmente excluir esta venda?")) return;
-  const res=await fetchAPI({acao:"excluir",id});
-  if(res.success){
-    card.remove();
-    cacheVendas=cacheVendas.filter(v=>v.id!==id);
-    recalcTotais();
-  }
-}
-
-function recalcTotais(){
-  let totalPago=0,totalNao=0;
-  cacheVendas.forEach(v=>{
-    if(v.pago) totalPago+=v.valor*v.quantidade;
-    else totalNao+=v.valor*v.quantidade;
-  });
-  document.getElementById('totais').textContent=`Total Pago: R$ ${totalPago.toFixed(2)} | Total Não Pago: R$ ${totalNao.toFixed(2)}`;
-}
-
+// ADICIONAR VENDA
 async function adicionarVenda(){
   const cliente=document.getElementById('cliente').value.trim();
   const valor=parseFloat(document.getElementById('valor').value);
   const quantidade=parseInt(document.getElementById('quantidade').value)||1;
   const data=document.getElementById('dataVenda').value;
   if(!cliente||isNaN(valor)) return alert("Preencha os campos corretamente!");
+
   const res=await fetchAPI({acao:"adicionar",cliente,valor,quantidade,dataVenda:data});
-  if(res.success) carregarVendas();
+  if(res.success){
+    const novaVenda={id:res.id,cliente,valor,quantidade,dataVenda:data,pago:false};
+    cacheVendas.push(novaVenda);
+    cacheVendas.sort((a,b)=>a.cliente.localeCompare(b.cliente));
+    atualizarMenuMeses();
+    exibirVendas(cacheVendas);
+    document.getElementById('cliente').value='';
+    document.getElementById('valor').value='';
+    document.getElementById('quantidade').value='1';
+    dataVenda.value=new Date().toISOString().split('T')[0];
+    document.getElementById('cliente').focus();
+  }
 }
 
-function filtrar(status){
-  const cards=document.querySelectorAll(".card");
-  cards.forEach(card=>{
-    const btn=card.querySelector(".status-btn");
-    if(status==="todas") card.style.display="flex";
-    else if(status==="pago") card.style.display=btn.textContent==="PAGO"?"flex":"none";
-    else if(status==="nao") card.style.display=btn.textContent==="NÃO PAGO"?"flex":"none";
-  });
+// MARCAR PAGO
+async function updateStatus(id,btn){
+  const novoStatus=btn.textContent==="NÃO PAGO";
+  const res=await fetchAPI({id,pago:novoStatus});
+  if(res.success){
+    const v=cacheVendas.find(x=>x.id===id);
+    if(v)v.pago=novoStatus;
+    exibirVendas(cacheVendas);
+  }
+}
+
+// EXCLUIR VENDA
+async function deleteVenda(id,card){
+  if(!confirm("Deseja realmente excluir esta venda?")) return;
+  const res=await fetchAPI({acao:"excluir",id});
+  if(res.success){
+    cacheVendas=cacheVendas.filter(x=>x.id!==id);
+    exibirVendas(cacheVendas);
+  }
+}
+
+// FILTROS
+function filtrar(tipo){
+  let filtradas=[];
+  if(tipo==="todas") filtradas=cacheVendas;
+  if(tipo==="pago") filtradas=cacheVendas.filter(x=>x.pago);
+  if(tipo==="nao") filtradas=cacheVendas.filter(x=>!x.pago);
+  exibirVendas(filtradas);
 }
 
 function filtrarMes(mes){
-  const groups=document.querySelectorAll(".month-group");
-  groups.forEach(g=>{
-    const title=g.querySelector(".month-title").textContent;
-    g.style.display=title===mes?"block":"none";
+  const filtradas=cacheVendas.filter(v=>{
+    const dateObj=new Date(v.dataVenda);
+    const monthName=dateObj.toLocaleString('pt-BR',{month:'long',year:'numeric'});
+    return monthName===mes;
   });
+  exibirVendas(filtradas);
 }
 
+// PESQUISA
+function pesquisarCliente(){
+  const termo=document.getElementById('search').value.trim().toLowerCase();
+  if(!termo){ exibirVendas(cacheVendas); return; }
+  const filtradas=cacheVendas.filter(v=>v.cliente.toLowerCase().includes(termo));
+  exibirVendas(filtradas);
+}
+
+// CARREGAR INICIAL
 carregarVendas();
 </script>
 </body>
