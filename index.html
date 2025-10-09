@@ -7,11 +7,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #000;
+    --bg: #0a0a0a;
     --panel: #111;
     --text: #fff;
     --green: #00b894;
     --red: #d63031;
+    --accent: #1e1e1e;
   }
 
   * { box-sizing: border-box; font-family: "Poppins", sans-serif; }
@@ -73,8 +74,9 @@
     background: rgba(255,255,255,0.05);
     cursor: pointer;
     transition: 0.2s;
+    text-align: center;
   }
-  .menu-item:hover { background: #222; }
+  .menu-item:hover { background: #1f1f1f; }
 
   main {
     margin-top: 100px;
@@ -94,15 +96,16 @@
     font-size: 1rem;
     outline: none;
   }
-  input { background: #222; color: white; }
+  input { background: #1c1c1c; color: white; }
   input::placeholder { color: #aaa; }
 
   button {
-    background: #000;
+    background: #181818;
     color: white;
     font-weight: 600;
     cursor: pointer;
     transition: 0.3s;
+    border: 1px solid #333;
   }
   button:hover { background: #222; }
 
@@ -116,7 +119,9 @@
     flex-wrap: wrap;
     align-items: center;
     box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    transition: transform 0.2s ease;
   }
+  .card:hover { transform: scale(1.01); }
 
   .info { font-size: 0.9rem; flex: 1 1 180px; }
   .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
@@ -125,15 +130,16 @@
     border-radius: 18px;
     padding: 10px 16px;
     font-weight: 600;
-    border: 1px solid #333;
-    background: #000;
+    border: none;
     cursor: pointer;
     flex: 1 1 100px;
     text-align: center;
+    transition: 0.3s;
   }
-  .status-btn.pago { color: var(--green); }
-  .status-btn.nao { color: var(--red); }
-  .status-btn:hover, .delete-btn:hover { background: #111; }
+  .status-btn.pago { background: rgba(0,184,148,0.1); color: var(--green); border: 1px solid var(--green); }
+  .status-btn.nao { background: rgba(214,48,49,0.1); color: var(--red); border: 1px solid var(--red); }
+  .delete-btn { background: rgba(255,255,255,0.05); color: #ccc; border: 1px solid #444; }
+  .delete-btn:hover { background: #222; }
 
   .totals {
     text-align: center;
@@ -142,6 +148,13 @@
     background: #1a1a1a;
     border-radius: 20px;
     padding: 14px;
+  }
+
+  .loader {
+    text-align: center;
+    padding: 20px;
+    color: #888;
+    font-size: 0.95rem;
   }
 
   @media (max-width: 480px) {
@@ -179,27 +192,47 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwbGpkzdk-uowBk1Mg3LKUn
 const sidebar = document.getElementById('sidebar');
 const hamburgerBtn = document.getElementById('hamburgerBtn');
 const dataVenda = document.getElementById('dataVenda');
+const lista = document.getElementById('listaVendas');
 
 hamburgerBtn.addEventListener('click', e => { e.stopPropagation(); sidebar.classList.toggle('open'); });
 document.addEventListener('click', e => { if(!sidebar.contains(e.target) && !hamburgerBtn.contains(e.target)) sidebar.classList.remove('open'); });
 
 dataVenda.value = new Date().toISOString().split('T')[0];
 
-async function fetchAPI(params = {}, method = "GET") {
+async function fetchAPI(params = {}, method = "GET", timeout = 8000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+
   const url = method === "GET" ? API_URL + "?" + new URLSearchParams(params) : API_URL;
-  const options = method === "POST" ? { method: "POST", body: JSON.stringify(params) } : {};
-  const res = await fetch(url, options);
-  return await res.json();
+  const options = method === "POST"
+    ? { method: "POST", body: JSON.stringify(params), signal: controller.signal }
+    : { signal: controller.signal };
+
+  try {
+    const res = await fetch(url, options);
+    clearTimeout(timer);
+    if (!res.ok) throw new Error("Erro na requisição");
+    return await res.json();
+  } catch (err) {
+    console.error(err);
+    alert("Erro ao carregar dados. Verifique sua conexão ou tente novamente.");
+    return [];
+  }
 }
 
 async function carregarVendas() {
+  lista.innerHTML = `<div class="loader">Carregando dados...</div>`;
   const vendas = await fetchAPI({ action: "get" });
   exibirVendas(vendas);
 }
 
-function exibirVendas(vendas) {
-  const lista = document.getElementById('listaVendas');
+function exibirVendas(vendas = []) {
   lista.innerHTML = "";
+  if (!vendas.length) {
+    lista.innerHTML = `<div class="loader">Nenhuma venda encontrada.</div>`;
+    return;
+  }
+
   let totalPago = 0, totalNao = 0;
 
   vendas.forEach(v => {
@@ -237,7 +270,8 @@ function exibirVendas(vendas) {
     else totalNao += v.valor * v.quantidade;
   });
 
-  document.getElementById('totais').textContent = `Total Pago: R$ ${totalPago.toFixed(2)} | Total Não Pago: R$ ${totalNao.toFixed(2)}`;
+  document.getElementById('totais').textContent = 
+    `Total Pago: R$ ${totalPago.toFixed(2)} | Total Não Pago: R$ ${totalNao.toFixed(2)}`;
 }
 
 async function adicionarVenda() {
@@ -248,30 +282,28 @@ async function adicionarVenda() {
 
   if(!cliente || isNaN(valor)) return alert("Preencha os campos corretamente!");
 
+  lista.innerHTML = `<div class="loader">Adicionando venda...</div>`;
   await fetchAPI({ action: "add", cliente, valor, quantidade, dataVenda: data }, "POST");
   carregarVendas();
 }
 
 async function togglePago(id, novoStatus) {
+  lista.innerHTML = `<div class="loader">Atualizando status...</div>`;
   await fetchAPI({ action: "updateStatus", id, pago: novoStatus }, "POST");
   carregarVendas();
 }
 
 async function excluirVenda(id) {
   if(!confirm("Deseja realmente excluir esta venda?")) return;
+  lista.innerHTML = `<div class="loader">Excluindo venda...</div>`;
   await fetchAPI({ action: "delete", id }, "POST");
   carregarVendas();
 }
 
-function filtrar(pagoStatus) {
-  carregarVendas().then(() => {
-    const cards = document.querySelectorAll(".card");
-    cards.forEach(card => {
-      const statusBtn = card.querySelector(".status-btn");
-      if(statusBtn.textContent === "PAGO") card.style.display = pagoStatus ? "flex" : "none";
-      else card.style.display = pagoStatus === false ? "flex" : "none";
-    });
-  });
+async function filtrar(pagoStatus) {
+  const vendas = await fetchAPI({ action: "get" });
+  const filtradas = vendas.filter(v => v.pago === pagoStatus);
+  exibirVendas(filtradas);
 }
 
 carregarVendas();
